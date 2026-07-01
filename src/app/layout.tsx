@@ -4,6 +4,12 @@ import { Providers } from './providers';
 export const metadata: Metadata = {
   title: 'Cocktail Showcase',
   description: 'Discover cocktails you can make with your ingredients',
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'Cocktails',
+  },
 };
 
 export const viewport: Viewport = {

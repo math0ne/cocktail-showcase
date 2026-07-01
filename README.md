@@ -5,16 +5,23 @@ A Next.js web app that helps you discover cocktails you can make from ingredient
 ## Features
 
 - **Ingredient Management** - Search and add ingredients from a master list of 600+ ingredients
+- **Quick Toggles** - Rapidly add/remove common fresh ingredients
 - **Cocktail Discovery** - View cocktails you can make with your ingredients
 - **Smart Matching** - Shows "Ready to make" vs "Missing X ingredients" for each cocktail
-- **Slideshow Mode** - Full-screen carousel for iPad/TV display with auto-advance
-- **Persistent Storage** - Your ingredients are saved to localStorage
+- **Fuzzy Search** - Search cocktails by name, category, or ingredient
+- **Filtering** - Filter by Ready, Tried, Liked, Matches, or browse All cocktails
+- **Personal Tracking** - Mark cocktails as Tried or Liked, add personal notes
+- **Slideshow Mode** - Full-screen carousel with Ken Burns effect, film grain, and retro filters
+- **PWA Support** - Install to home screen for a native app experience without browser UI
+- **Dark Mode** - Full dark mode support
+- **Persistent Storage** - Your ingredients and preferences are saved to localStorage
 
 ## Tech Stack
 
 - **Framework**: Next.js 14 (App Router)
 - **UI**: Chakra UI v2
 - **State**: Zustand with localStorage persistence
+- **Animations**: Framer Motion
 - **Data**: TheCocktailDB API
 
 ## Getting Started
@@ -42,29 +49,59 @@ npm start
 
 ## Usage
 
+### Single Page Design
+
+The app uses a Bar/Drinks toggle to switch between views:
+- **Bar** - Manage your ingredients (quick toggles, bar stock, add ingredients)
+- **Drinks** - Browse and filter cocktails
+
 ### Adding Ingredients
 
-1. Go to the home page
-2. Search for ingredients in the search box
-3. Click an ingredient to add it to your bar stock
+1. Switch to the Bar view
+2. Use Quick Toggles for common fresh ingredients
+3. Search and add ingredients from the full list
 4. Your ingredients are automatically saved
 
 ### Viewing Cocktails
 
-1. Click "View Cocktails" in the header
-2. Use filters to show all, ready-to-make, or partial matches
-3. Sort by best match, name, or category
-4. Green badges indicate cocktails you can make now
+1. Switch to the Drinks view
+2. Use filter toggles: Ready, Tried, Liked, Matches, All
+3. Search by cocktail name, category, or ingredient
+4. Sort by best match, name, category, glass type, or ingredient count
+5. Click a cocktail to view details, mark as tried/liked, and add notes
 
 ### Slideshow Mode
 
 1. Add ingredients that allow you to make at least one cocktail
-2. Click "Start Slideshow" or navigate to `/slideshow`
+2. Click "Slideshow" button in the header
 3. Controls:
-   - **Click/Tap**: Pause/resume auto-advance
-   - **Arrow keys**: Navigate between cocktails
-   - **Space**: Pause/resume
-   - **Settings icon**: Adjust slide duration (5-30 seconds)
+   - **Swipe/Arrow keys**: Navigate between cocktails
+   - **Settings icon**: Adjust duration, Ken Burns, film grain, retro filter
+   - **Info icon**: View cocktail details
+   - **X icon**: Exit slideshow
+
+## PWA Installation
+
+For the best experience on iPad/mobile (fullscreen without browser UI):
+
+1. Open the app in Safari
+2. Tap the Share button
+3. Select "Add to Home Screen"
+4. Launch from the home screen icon
+
+### PWA Icons
+
+Add icons to `/public/` for home screen:
+- `icon-192.png` (192x192)
+- `icon-512.png` (512x512)
+
+## Update Cocktail Data
+
+Cocktail data is cached locally. To fetch the latest from TheCocktailDB:
+
+```bash
+npm run update-cocktails
+```
 
 ## Project Structure
 
@@ -72,34 +109,28 @@ npm start
 src/
 ├── app/
 │   ├── layout.tsx            # Root layout with Chakra provider
-│   ├── page.tsx              # Home - ingredient management
-│   ├── cocktails/page.tsx    # Cocktail grid view
+│   ├── page.tsx              # Single page app (Bar/Drinks views)
+│   ├── providers.tsx         # Chakra UI provider
 │   └── slideshow/page.tsx    # Full-screen slideshow
 ├── components/
-│   ├── IngredientPicker.tsx  # Searchable ingredient selector
-│   ├── IngredientList.tsx    # User's ingredients display
 │   ├── CocktailCard.tsx      # Individual cocktail card
-│   ├── CocktailGrid.tsx      # Sortable/filterable grid
-│   └── Slideshow.tsx         # Full-screen carousel
+│   ├── CocktailGrid.tsx      # Sortable/filterable grid with toggles
+│   ├── CocktailModal.tsx     # Cocktail details modal
+│   ├── FreshIngredients.tsx  # Quick toggle buttons
+│   ├── IngredientPicker.tsx  # Searchable ingredient selector
+│   ├── IngredientList.tsx    # User's bar stock display
+│   ├── ShoppingList.tsx      # What to buy next suggestions
+│   ├── Slideshow.tsx         # Full-screen carousel
+│   └── ColorModeToggle.tsx   # Dark mode toggle
 ├── hooks/
-│   ├── useIngredients.ts     # Fetch all ingredients
 │   └── useCocktails.ts       # Fetch & match cocktails
 ├── lib/
-│   ├── api.ts                # TheCocktailDB API client
-│   └── matching.ts           # Cocktail matching logic
+│   └── fuzzyMatch.ts         # Fuzzy search utility
 ├── store/
-│   └── useStore.ts           # Zustand store
+│   └── useStore.ts           # Zustand store with persistence
 └── types/
     └── index.ts              # TypeScript interfaces
 ```
-
-## API
-
-This app uses [TheCocktailDB](https://www.thecocktaildb.com/) free API:
-
-- `GET /list.php?i=list` - Fetch all ingredients
-- `GET /filter.php?i={ingredient}` - Get cocktails containing an ingredient
-- `GET /lookup.php?i={id}` - Get full cocktail details
 
 ## License
 
