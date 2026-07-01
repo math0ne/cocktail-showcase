@@ -31,6 +31,11 @@ function parseCocktail(raw: RawCocktail): Cocktail {
     }
   }
 
+  // Parse tags from comma-separated string
+  const tags: string[] = raw.strTags
+    ? raw.strTags.split(',').map((t) => t.trim()).filter(Boolean)
+    : [];
+
   return {
     id: raw.idDrink,
     name: raw.strDrink,
@@ -40,6 +45,8 @@ function parseCocktail(raw: RawCocktail): Cocktail {
     instructions: raw.strInstructions,
     thumbnail: raw.strDrinkThumb,
     ingredients,
+    tags,
+    iba: raw.strIBA || null,
   };
 }
 

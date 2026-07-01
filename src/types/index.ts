@@ -70,6 +70,8 @@ export interface Cocktail {
   instructions: string;
   thumbnail: string;
   ingredients: Ingredient[];
+  tags: string[];
+  iba: string | null;
 }
 
 export interface CocktailMatch {
