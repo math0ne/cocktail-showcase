@@ -336,6 +336,8 @@ export function Slideshow() {
           key={cocktail.id + '-main'}
           position="absolute"
           inset={0}
+          w="100%"
+          h="100%"
           display="flex"
           alignItems="center"
           justifyContent="center"
@@ -348,11 +350,11 @@ export function Slideshow() {
           <MotionImage
             src={cocktail.thumbnail}
             alt={cocktail.name}
-            maxH="65%"
-            maxW="90%"
+            maxH="75%"
+            maxW="60%"
             objectFit="contain"
-            borderRadius="lg"
-            boxShadow="2xl"
+            borderRadius="xl"
+            boxShadow="dark-lg"
             initial={{
               scale: kenBurnsVariant.scale[0],
               x: kenBurnsVariant.x[0],
