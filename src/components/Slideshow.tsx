@@ -180,16 +180,17 @@ export function Slideshow() {
 
   // Touch swipe handlers
   const handleTouchStart = (e: React.TouchEvent) => {
-    e.preventDefault();
     setTouchStart(e.touches[0].clientX);
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    e.preventDefault();
+    // Only prevent default if we're in a swipe gesture
+    if (touchStart !== null) {
+      e.preventDefault();
+    }
   };
 
   const handleTouchEnd = (e: React.TouchEvent) => {
-    e.preventDefault();
     if (touchStart === null) return;
 
     const touchEnd = e.changedTouches[0].clientX;
@@ -255,9 +256,8 @@ export function Slideshow() {
       onClick={() => setIsPaused((p) => !p)}
       cursor="pointer"
       sx={{
-        touchAction: 'none',
+        touchAction: 'manipulation',
         overscrollBehavior: 'none',
-        WebkitOverflowScrolling: 'auto',
         userSelect: 'none',
         WebkitUserSelect: 'none',
       }}
