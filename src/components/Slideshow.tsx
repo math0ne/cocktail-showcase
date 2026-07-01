@@ -396,9 +396,9 @@ export function Slideshow() {
                 <Badge
                   key={tag}
                   colorScheme="teal"
-                  fontSize={{ base: 'xs', md: 'sm' }}
-                  px={2}
-                  py={0.5}
+                  fontSize={{ base: 'sm', md: 'md' }}
+                  px={3}
+                  py={1}
                   textShadow="1px 1px 2px rgba(0,0,0,0.5)"
                 >
                   {tag}
