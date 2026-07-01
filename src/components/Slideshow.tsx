@@ -649,7 +649,7 @@ export function Slideshow() {
           borderTopRightRadius="2xl"
           boxShadow="8px 0 32px rgba(0, 0, 0, 0.3)"
           sx={{
-            bottom: { base: 'calc(1.25rem + env(safe-area-inset-bottom))', md: 'calc(1.75rem + env(safe-area-inset-bottom))' },
+            bottom: { base: 'max(1rem, env(safe-area-inset-bottom, 1rem))', md: 'max(1.5rem, env(safe-area-inset-bottom, 1.5rem))' },
             paddingLeft: { base: '1.5rem', md: '2rem' },
             paddingRight: { base: '1.5rem', md: '2rem' },
             paddingBottom: { base: '1.5rem', md: '2rem' },
@@ -772,7 +772,7 @@ export function Slideshow() {
         borderColor="whiteAlpha.200"
         boxShadow="-8px 0 32px rgba(0, 0, 0, 0.3)"
         sx={{
-          top: { base: 'calc(1rem + env(safe-area-inset-top))', md: 'calc(1.5rem + env(safe-area-inset-top))' },
+          top: { base: 'max(1rem, env(safe-area-inset-top, 1rem))', md: 'max(1.5rem, env(safe-area-inset-top, 1.5rem))' },
           right: 0,
         }}
       >
@@ -873,7 +873,7 @@ export function Slideshow() {
               animate="visible"
               exit="exit"
               sx={{
-                bottom: { base: 'calc(1rem + env(safe-area-inset-bottom))', md: 'calc(1.25rem + env(safe-area-inset-bottom))' },
+                bottom: { base: 'max(1rem, env(safe-area-inset-bottom, 1rem))', md: 'max(1.5rem, env(safe-area-inset-bottom, 1.5rem))' },
               }}
               cursor="pointer"
               onClick={(e) => { e.stopPropagation(); goNext(); resetTimer(); }}
