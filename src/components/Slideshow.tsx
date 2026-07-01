@@ -350,8 +350,8 @@ export function Slideshow() {
           <MotionImage
             src={cocktail.thumbnail}
             alt={cocktail.name}
-            maxH="80vh"
-            maxW="50vw"
+            h="70vh"
+            w="auto"
             objectFit="contain"
             borderRadius="xl"
             boxShadow="dark-lg"
