@@ -335,10 +335,14 @@ export function Slideshow() {
         <MotionBox
           key={cocktail.id + '-main'}
           position="absolute"
-          inset={0}
+          top={0}
+          left={0}
+          right={0}
+          bottom="35%"
           display="flex"
           alignItems="center"
           justifyContent="center"
+          overflow="hidden"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -348,11 +352,10 @@ export function Slideshow() {
           <MotionImage
             src={cocktail.thumbnail}
             alt={cocktail.name}
-            maxH={{ base: '50vh', md: '60vh', lg: '70vh' }}
-            maxW={{ base: '85vw', md: '50vw', lg: '45vw' }}
+            h="100%"
+            w="100%"
             objectFit="contain"
             borderRadius="lg"
-            boxShadow="2xl"
             initial={{
               scale: kenBurnsVariant.scale[0],
               x: kenBurnsVariant.x[0],
