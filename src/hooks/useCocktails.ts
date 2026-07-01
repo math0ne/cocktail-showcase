@@ -43,6 +43,8 @@ export function useCocktails(browseAll: boolean = false) {
   const myIngredients = useStore((state) => state.myIngredients);
 
   const [matches, setMatches] = useState<CocktailMatch[]>([]);
+  const [totalCount, setTotalCount] = useState<number>(0);
+  const [matchedCount, setMatchedCount] = useState<number>(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
@@ -60,9 +62,14 @@ export function useCocktails(browseAll: boolean = false) {
       // Always fetch all cocktails and filter locally
       // The filter.php API is limited on the free tier
       const allCocktails = await getAllCocktails();
+      setTotalCount(allCocktails.length);
 
       // Match and sort cocktails
       const matched = matchCocktails(allCocktails, myIngredients);
+
+      // Cocktails with at least one matching ingredient
+      const withMatches = matched.filter(m => m.matchedIngredients.length > 0);
+      setMatchedCount(withMatches.length);
 
       let filtered: CocktailMatch[];
       if (browseAll) {
@@ -70,7 +77,7 @@ export function useCocktails(browseAll: boolean = false) {
         filtered = matched;
       } else {
         // Only show cocktails with at least one matching ingredient
-        filtered = matched.filter(m => m.matchedIngredients.length > 0);
+        filtered = withMatches;
       }
 
       const sorted = sortByMatch(filtered);
@@ -99,6 +106,8 @@ export function useCocktails(browseAll: boolean = false) {
     matches,
     fullMatches,
     partialMatches,
+    totalCount,
+    matchedCount,
     loading,
     error,
     refresh: loadCocktails,

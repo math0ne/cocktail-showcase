@@ -12,6 +12,7 @@ import {
   Icon,
   Divider,
   Button,
+  Heading,
   useColorModeValue,
 } from '@chakra-ui/react';
 import { ChevronDownIcon, ChevronRightIcon, AddIcon } from '@chakra-ui/icons';
@@ -33,7 +34,6 @@ export function ShoppingList() {
 
   // Colors
   const dividerColor = useColorModeValue('gray.200', 'gray.600');
-  const headingColor = useColorModeValue('orange.600', 'orange.300');
   const textMuted = useColorModeValue('gray.500', 'gray.400');
   const textPrimary = useColorModeValue('gray.700', 'gray.200');
   const bgItem = useColorModeValue('gray.100', 'gray.700');
@@ -120,12 +120,9 @@ export function ShoppingList() {
   return (
     <Box>
       <Divider my={4} borderColor={dividerColor} />
-      <Text fontWeight="medium" mb={2} color={headingColor} fontSize="sm">
+      <Heading size="md" mb={4} color={textPrimary}>
         What to Buy Next
-      </Text>
-      <Text fontSize="xs" color={textMuted} mb={3}>
-        Ingredients that unlock the most cocktails:
-      </Text>
+      </Heading>
 
       <VStack align="stretch" spacing={1}>
         {suggestions.map((suggestion) => (

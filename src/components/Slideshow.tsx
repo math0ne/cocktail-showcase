@@ -15,6 +15,17 @@ import {
   useDisclosure,
   Badge,
   Image,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalCloseButton,
+  Switch,
+  FormControl,
+  FormLabel,
+  Select,
+  Divider,
 } from '@chakra-ui/react';
 import {
   ChevronLeftIcon,
@@ -23,6 +34,7 @@ import {
   CloseIcon,
   InfoIcon,
 } from '@chakra-ui/icons';
+
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCocktails } from '@/hooks/useCocktails';
 import { useStore } from '@/store/useStore';
@@ -36,7 +48,7 @@ const MotionText = motion(Text);
 const MotionHStack = motion(HStack);
 const MotionVStack = motion(VStack);
 
-// Slide-in card animation variants
+// Slide-in card animation variants (left side)
 const cardVariants = {
   hidden: { opacity: 0, x: -40 },
   visible: {
@@ -52,6 +64,26 @@ const cardVariants = {
   exit: {
     opacity: 0,
     x: -30,
+    transition: {
+      duration: 0.3,
+    },
+  },
+};
+
+// Slide-in card animation variants (right side)
+const cardVariantsRight = {
+  hidden: { opacity: 0, x: 40 },
+  visible: {
+    opacity: 1,
+    x: 0,
+    transition: {
+      duration: 0.5,
+      ease: [0.25, 0.46, 0.45, 0.94],
+    },
+  },
+  exit: {
+    opacity: 0,
+    x: 30,
     transition: {
       duration: 0.3,
     },
@@ -164,8 +196,16 @@ function shuffleArray<T>(array: T[]): T[] {
 
 export function Slideshow() {
   const { fullMatches, loading } = useCocktails();
-  const interval = useStore((state) => state.slideShowSettings.interval);
+  const slideShowSettings = useStore((state) => state.slideShowSettings);
   const setSlideShowInterval = useStore((state) => state.setSlideShowInterval);
+  const setKenBurnsEnabled = useStore((state) => state.setKenBurnsEnabled);
+  const setFilmGrainEnabled = useStore((state) => state.setFilmGrainEnabled);
+  const setRetroFilterEnabled = useStore((state) => state.setRetroFilterEnabled);
+  const setTransitionSpeed = useStore((state) => state.setTransitionSpeed);
+  const triedCocktails = useStore((state) => state.triedCocktails);
+  const heartedCocktails = useStore((state) => state.heartedCocktails);
+
+  const { interval, kenBurnsEnabled, filmGrainEnabled, retroFilterEnabled, transitionSpeed } = slideShowSettings;
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [touchStart, setTouchStart] = useState<number | null>(null);
@@ -175,7 +215,7 @@ export function Slideshow() {
   const [progress, setProgress] = useState(0);
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
   const progressRef = useRef<number>(0);
-  const { isOpen: showSettings, onToggle: toggleSettings } = useDisclosure();
+  const { isOpen: showSettings, onOpen: openSettings, onClose: closeSettings } = useDisclosure();
   const { isOpen: showDetails, onOpen: openDetails, onClose: closeDetailsModal } = useDisclosure();
 
   const resetTimer = useCallback(() => {
@@ -293,6 +333,15 @@ export function Slideshow() {
     return kenBurnsVariants[currentIndex % kenBurnsVariants.length];
   }, [currentIndex]);
 
+  // Transition duration based on speed setting
+  const transitionDuration = useMemo(() => {
+    switch (transitionSpeed) {
+      case 'slow': return 1.5;
+      case 'fast': return 0.5;
+      default: return 1;
+    }
+  }, [transitionSpeed]);
+
   const goNext = useCallback(() => {
     setCurrentIndex((i) => (i + 1) % shuffledMatches.length);
   }, [shuffledMatches.length]);
@@ -349,12 +398,12 @@ export function Slideshow() {
       if (showDetails) return; // Don't navigate when modal is open
       if (e.key === 'ArrowRight') goNext();
       else if (e.key === 'ArrowLeft') goPrev();
-      else if (e.key === 'Escape') toggleSettings();
+      else if (e.key === 'Escape') openSettings();
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [goNext, goPrev, toggleSettings, showDetails]);
+  }, [goNext, goPrev, openSettings, showDetails]);
 
   // Touch swipe handlers
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -467,7 +516,7 @@ export function Slideshow() {
           initial={{ opacity: 0, scale: 1.1 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.95 }}
-          transition={{ duration: 1.2, ease: [0.4, 0, 0.2, 1] }}
+          transition={{ duration: transitionDuration * 1.2, ease: [0.4, 0, 0.2, 1] }}
           pointerEvents="none"
         >
           <Box
@@ -501,32 +550,52 @@ export function Slideshow() {
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 1.02 }}
-          transition={{ duration: 1, ease: [0.4, 0, 0.2, 1] }}
+          transition={{ duration: transitionDuration, ease: [0.4, 0, 0.2, 1] }}
           pointerEvents="none"
         >
-          <MotionImage
-            src={cocktail.thumbnail}
-            alt={cocktail.name}
-            h="85vh"
-            w="auto"
-            objectFit="contain"
-            borderRadius="xl"
-            boxShadow="dark-lg"
-            initial={{
+          <MotionBox
+            position="relative"
+            initial={kenBurnsEnabled ? {
               scale: kenBurnsVariant.scale[0],
               x: kenBurnsVariant.x[0],
               y: kenBurnsVariant.y[0],
-            }}
-            animate={{
+            } : { scale: 1, x: 0, y: 0 }}
+            animate={kenBurnsEnabled ? {
               scale: kenBurnsVariant.scale[1],
               x: kenBurnsVariant.x[1],
               y: kenBurnsVariant.y[1],
-            }}
+            } : { scale: 1, x: 0, y: 0 }}
             transition={{
-              duration: interval,
+              duration: kenBurnsEnabled ? interval : 0,
               ease: 'linear',
             }}
-          />
+          >
+            <Image
+              src={cocktail.thumbnail}
+              alt={cocktail.name}
+              h="85vh"
+              w="auto"
+              objectFit="contain"
+              borderRadius="xl"
+              boxShadow="dark-lg"
+              filter={retroFilterEnabled ? 'blur(0.3px) saturate(0.7) contrast(1.3) brightness(1.1) sepia(0.2)' : 'none'}
+            />
+            {/* Vintage overlay - vignette + warm tint */}
+            {retroFilterEnabled && (
+              <Box
+                position="absolute"
+                inset={0}
+                borderRadius="xl"
+                pointerEvents="none"
+                sx={{
+                  background: `
+                    radial-gradient(ellipse at center, transparent 0%, transparent 50%, rgba(0,0,0,0.4) 100%),
+                    linear-gradient(0deg, rgba(153,119,34,0.15) 0%, rgba(153,119,34,0.15) 100%)
+                  `,
+                }}
+              />
+            )}
+          </MotionBox>
         </MotionBox>
       </AnimatePresence>
 
@@ -542,19 +611,21 @@ export function Slideshow() {
       />
 
       {/* Film Grain Overlay */}
-      <Box
-        position="absolute"
-        inset={0}
-        pointerEvents="none"
-        zIndex={50}
-        opacity={0.4}
-        mixBlendMode="overlay"
-        sx={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
+      {filmGrainEnabled && (
+        <Box
+          position="absolute"
+          inset={0}
+          pointerEvents="none"
+          zIndex={50}
+          opacity={0.4}
+          mixBlendMode="overlay"
+          sx={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
           backgroundRepeat: 'repeat',
           backgroundSize: '150px 150px',
         }}
       />
+      )}
 
       {/* Content Card - Glassmorphism with slide-in */}
       <AnimatePresence mode="wait">
@@ -586,16 +657,18 @@ export function Slideshow() {
           }}
         >
           <VStack align="start" spacing={4} maxW="700px">
-            {/* Title */}
-            <MotionText
-              variants={itemVariants}
-              fontSize={{ base: '2xl', md: '4xl', lg: '5xl' }}
-              fontWeight="bold"
-              color="white"
-              lineHeight="1.1"
-            >
-              {cocktail.name}
-            </MotionText>
+            {/* Title with status icons */}
+            <HStack spacing={3} align="center">
+              <MotionText
+                variants={itemVariants}
+                fontSize={{ base: '2xl', md: '4xl', lg: '5xl' }}
+                fontWeight="bold"
+                color="white"
+                lineHeight="1.1"
+              >
+                {cocktail.name}
+              </MotionText>
+            </HStack>
 
             {/* Badges */}
             <MotionHStack
@@ -604,6 +677,30 @@ export function Slideshow() {
               align="center"
               variants={containerVariants}
             >
+              {triedCocktails.includes(cocktail.id) && (
+                <MotionBox variants={badgeVariants}>
+                  <Badge
+                    colorScheme="green"
+                    fontSize={{ base: 'xs', md: 'sm' }}
+                    px={2}
+                    py={1}
+                  >
+                    Tried
+                  </Badge>
+                </MotionBox>
+              )}
+              {heartedCocktails.includes(cocktail.id) && (
+                <MotionBox variants={badgeVariants}>
+                  <Badge
+                    colorScheme="red"
+                    fontSize={{ base: 'xs', md: 'sm' }}
+                    px={2}
+                    py={1}
+                  >
+                    Liked
+                  </Badge>
+                </MotionBox>
+              )}
               <MotionBox variants={badgeVariants}>
                 <Badge
                   colorScheme="purple"
@@ -738,7 +835,7 @@ export function Slideshow() {
         <IconButton
           aria-label="Settings"
           icon={<SettingsIcon color="white" />}
-          onClick={(e) => { e.stopPropagation(); toggleSettings(); }}
+          onClick={(e) => { e.stopPropagation(); openSettings(); }}
           bg="whiteAlpha.100"
           backdropFilter="blur(8px)"
           border="1px solid"
@@ -752,66 +849,74 @@ export function Slideshow() {
       </HStack>
 
       {/* Next Drink Preview - Bottom Right */}
-      {nextMatch && shuffledMatches.length > 1 && (
-        <Box
-          position="absolute"
-          right={0}
-          zIndex={100}
-          py={3}
-          pl={4}
-          pr={4}
-          bg="whiteAlpha.100"
-          backdropFilter="blur(20px)"
-          borderTopLeftRadius="2xl"
-          borderBottomLeftRadius="2xl"
-          border="1px solid"
-          borderRight="none"
-          borderColor="whiteAlpha.200"
-          boxShadow="-8px 0 32px rgba(0, 0, 0, 0.3)"
-          sx={{
-            bottom: { base: 'calc(1.25rem + env(safe-area-inset-bottom))', md: 'calc(1.75rem + env(safe-area-inset-bottom))' },
-          }}
-          cursor="pointer"
-          onClick={(e) => { e.stopPropagation(); goNext(); resetTimer(); }}
-          _hover={{ bg: 'whiteAlpha.200' }}
-          transition="all 0.2s ease"
-        >
-          <HStack spacing={3}>
-            <Box
-              w={{ base: '50px', md: '60px' }}
-              h={{ base: '50px', md: '60px' }}
-              borderRadius="lg"
-              overflow="hidden"
-              flexShrink={0}
+      {shuffledMatches.length > 1 && (
+        <AnimatePresence mode="wait">
+          {nextMatch && (
+            <MotionBox
+              key={nextMatch.cocktail.id + '-preview'}
+              position="absolute"
+              right={0}
+              zIndex={100}
+              py={3}
+              pl={4}
+              pr={6}
+              bg="whiteAlpha.100"
+              backdropFilter="blur(20px)"
+              borderTopLeftRadius="2xl"
+              borderBottomLeftRadius="2xl"
+              border="1px solid"
+              borderRight="none"
+              borderColor="whiteAlpha.200"
+              boxShadow="-8px 0 32px rgba(0, 0, 0, 0.3)"
+              variants={cardVariantsRight}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              sx={{
+                bottom: { base: 'calc(1rem + env(safe-area-inset-bottom))', md: 'calc(1.25rem + env(safe-area-inset-bottom))' },
+              }}
+              cursor="pointer"
+              onClick={(e) => { e.stopPropagation(); goNext(); resetTimer(); }}
+              _hover={{ bg: 'whiteAlpha.200' }}
             >
-              <Image
-                src={nextMatch.cocktail.thumbnail}
-                alt={nextMatch.cocktail.name}
-                w="100%"
-                h="100%"
-                objectFit="cover"
-              />
-            </Box>
-            <VStack align="start" spacing={0}>
-              <Text
-                color="whiteAlpha.600"
-                fontSize={{ base: 'xs', md: 'sm' }}
-                fontWeight="medium"
-              >
-                Up Next
-              </Text>
-              <Text
-                color="white"
-                fontSize={{ base: 'sm', md: 'md' }}
-                fontWeight="semibold"
-                noOfLines={1}
-                maxW={{ base: '120px', md: '160px' }}
-              >
-                {nextMatch.cocktail.name}
-              </Text>
-            </VStack>
-          </HStack>
-        </Box>
+              <HStack spacing={3}>
+                <Box
+                  w={{ base: '50px', md: '60px' }}
+                  h={{ base: '50px', md: '60px' }}
+                  borderRadius="lg"
+                  overflow="hidden"
+                  flexShrink={0}
+                >
+                  <Image
+                    src={nextMatch.cocktail.thumbnail}
+                    alt={nextMatch.cocktail.name}
+                    w="100%"
+                    h="100%"
+                    objectFit="cover"
+                  />
+                </Box>
+                <VStack align="start" spacing={0}>
+                  <Text
+                    color="whiteAlpha.600"
+                    fontSize={{ base: 'xs', md: 'sm' }}
+                    fontWeight="medium"
+                  >
+                    Up Next
+                  </Text>
+                  <Text
+                    color="white"
+                    fontSize={{ base: 'sm', md: 'md' }}
+                    fontWeight="semibold"
+                    noOfLines={1}
+                    maxW={{ base: '120px', md: '160px' }}
+                  >
+                    {nextMatch.cocktail.name}
+                  </Text>
+                </VStack>
+              </HStack>
+            </MotionBox>
+          )}
+        </AnimatePresence>
       )}
 
       {/* Fullscreen Prompt (for iOS/iPad) - Glassmorphism Style */}
@@ -848,73 +953,113 @@ export function Slideshow() {
         </Box>
       )}
 
-      {/* Settings Panel - Glassmorphism Style */}
-      {showSettings && (
-        <Box
-          position="absolute"
-          top={0}
-          right={0}
-          bottom={0}
-          w={{ base: '100%', md: '360px' }}
-          bg="rgba(0, 0, 0, 0.6)"
-          backdropFilter="blur(24px)"
-          borderLeft="1px solid"
+      {/* Settings Modal */}
+      <Modal isOpen={showSettings} onClose={closeSettings} isCentered size="md">
+        <ModalOverlay backdropFilter="blur(8px)" bg="blackAlpha.700" />
+        <ModalContent
+          bg="rgba(30, 30, 30, 0.95)"
+          backdropFilter="blur(20px)"
+          border="1px solid"
           borderColor="whiteAlpha.200"
-          boxShadow="-8px 0 32px rgba(0, 0, 0, 0.4)"
-          p={6}
-          onClick={(e) => e.stopPropagation()}
+          borderRadius="2xl"
+          mx={4}
         >
-          <VStack align="stretch" spacing={6}>
-            <Flex justify="space-between" align="center">
-              <Text color="white" fontSize="xl" fontWeight="bold">
-                Settings
-              </Text>
-              <IconButton
-                aria-label="Close"
-                icon={<CloseIcon />}
-                onClick={toggleSettings}
-                variant="ghost"
-                colorScheme="whiteAlpha"
-                size="sm"
-              />
-            </Flex>
-
-            <Box>
-              <Text color="white" mb={2}>
-                Slide Duration: {interval}s
-              </Text>
-              <Slider
-                value={interval}
-                min={5}
-                max={30}
-                step={1}
-                onChange={setSlideShowInterval}
-              >
-                <SliderTrack bg="whiteAlpha.300">
-                  <SliderFilledTrack bg="teal.500" />
-                </SliderTrack>
-                <SliderThumb boxSize={6} />
-              </Slider>
-            </Box>
-
-            <Link href="/" passHref legacyBehavior>
-              <Box
-                as="a"
-                color="teal.300"
-                fontSize="lg"
-                textAlign="center"
-                _hover={{ color: 'teal.200' }}
-              >
-                Exit Slideshow
+          <ModalHeader color="white" pb={2}>Slideshow Settings</ModalHeader>
+          <ModalCloseButton color="white" />
+          <ModalBody pb={6}>
+            <VStack align="stretch" spacing={5}>
+              {/* Slide Duration */}
+              <Box>
+                <Text color="white" mb={3} fontWeight="medium">
+                  Slide Duration: {interval}s
+                </Text>
+                <Slider
+                  value={interval}
+                  min={5}
+                  max={30}
+                  step={1}
+                  onChange={setSlideShowInterval}
+                >
+                  <SliderTrack bg="whiteAlpha.300">
+                    <SliderFilledTrack bg="teal.500" />
+                  </SliderTrack>
+                  <SliderThumb boxSize={5} />
+                </Slider>
               </Box>
-            </Link>
 
-            <Text color="whiteAlpha.600" fontSize="sm">
-              Keyboard: Arrow keys to navigate
-            </Text>
-          </VStack>
-        </Box>
-      )}
+              <Divider borderColor="whiteAlpha.200" />
+
+              {/* Animation Settings */}
+              <Text color="white" fontWeight="medium" fontSize="sm" textTransform="uppercase" letterSpacing="wide">
+                Animations
+              </Text>
+
+              <FormControl display="flex" alignItems="center" justifyContent="space-between">
+                <FormLabel color="white" mb={0} fontWeight="normal">
+                  Ken Burns Effect
+                </FormLabel>
+                <Switch
+                  isChecked={kenBurnsEnabled}
+                  onChange={(e) => setKenBurnsEnabled(e.target.checked)}
+                  colorScheme="teal"
+                  size="md"
+                />
+              </FormControl>
+
+              <FormControl display="flex" alignItems="center" justifyContent="space-between">
+                <FormLabel color="white" mb={0} fontWeight="normal">
+                  Film Grain
+                </FormLabel>
+                <Switch
+                  isChecked={filmGrainEnabled}
+                  onChange={(e) => setFilmGrainEnabled(e.target.checked)}
+                  colorScheme="teal"
+                  size="md"
+                />
+              </FormControl>
+
+              <FormControl display="flex" alignItems="center" justifyContent="space-between">
+                <FormLabel color="white" mb={0} fontWeight="normal">
+                  Retro Film Filter
+                </FormLabel>
+                <Switch
+                  isChecked={retroFilterEnabled}
+                  onChange={(e) => setRetroFilterEnabled(e.target.checked)}
+                  colorScheme="teal"
+                  size="md"
+                />
+              </FormControl>
+
+              <FormControl>
+                <FormLabel color="white" fontWeight="normal">
+                  Transition Speed
+                </FormLabel>
+                <Select
+                  value={transitionSpeed}
+                  onChange={(e) => setTransitionSpeed(e.target.value as 'slow' | 'normal' | 'fast')}
+                  bg="whiteAlpha.100"
+                  border="1px solid"
+                  borderColor="whiteAlpha.300"
+                  color="white"
+                  _hover={{ borderColor: 'whiteAlpha.400' }}
+                  _focus={{ borderColor: 'teal.500', boxShadow: '0 0 0 1px var(--chakra-colors-teal-500)' }}
+                >
+                  <option value="slow" style={{ background: '#1a1a1a' }}>Slow</option>
+                  <option value="normal" style={{ background: '#1a1a1a' }}>Normal</option>
+                  <option value="fast" style={{ background: '#1a1a1a' }}>Fast</option>
+                </Select>
+              </FormControl>
+
+              <Divider borderColor="whiteAlpha.200" />
+
+              {/* Keyboard Shortcuts */}
+              <Text color="whiteAlpha.600" fontSize="sm">
+                Keyboard: Arrow keys to navigate
+              </Text>
+            </VStack>
+          </ModalBody>
+        </ModalContent>
+      </Modal>
 
       <CocktailModal
         match={currentMatch}

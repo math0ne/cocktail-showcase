@@ -22,7 +22,7 @@ export function IngredientCard({ ingredient, isAdded, onClick }: IngredientCardP
   const borderAdded = useColorModeValue('green.400', 'green.500');
   const textPrimary = useColorModeValue('gray.700', 'gray.100');
 
-  const imageUrl = getIngredientImageUrl(ingredient, 'Medium');
+  const imageUrl = getIngredientImageUrl(ingredient, 'Small');
 
   return (
     <Box
@@ -46,6 +46,7 @@ export function IngredientCard({ ingredient, isAdded, onClick }: IngredientCardP
           w="100%"
           aspectRatio="1"
           objectFit="contain"
+          loading="lazy"
           fallback={
             <Box
               w="100%"

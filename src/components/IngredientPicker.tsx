@@ -15,6 +15,7 @@ import { SearchIcon } from '@chakra-ui/icons';
 import { useIngredients } from '@/hooks/useIngredients';
 import { useStore } from '@/store/useStore';
 import { IngredientCard } from './IngredientCard';
+import { fuzzyMatch } from '@/lib/fuzzyMatch';
 
 export function IngredientPicker() {
   const [search, setSearch] = useState('');
@@ -34,8 +35,7 @@ export function IngredientPicker() {
 
   const filteredIngredients = useMemo(() => {
     if (!search.trim()) return ingredients;
-    const searchLower = search.toLowerCase();
-    return ingredients.filter((i) => i.toLowerCase().includes(searchLower));
+    return ingredients.filter((i) => fuzzyMatch(i, search));
   }, [ingredients, search]);
 
   const handleSelect = (ingredient: string) => {

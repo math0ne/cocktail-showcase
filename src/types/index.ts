@@ -83,16 +83,30 @@ export interface CocktailMatch {
 
 export interface SlideShowSettings {
   interval: number; // seconds between slides
+  kenBurnsEnabled: boolean;
+  filmGrainEnabled: boolean;
+  retroFilterEnabled: boolean;
+  transitionSpeed: 'slow' | 'normal' | 'fast';
 }
 
 export interface AppState {
   myIngredients: string[];
   cachedCocktails: Record<string, Cocktail>;
   slideShowSettings: SlideShowSettings;
+  triedCocktails: string[];
+  heartedCocktails: string[];
+  cocktailNotes: Record<string, string>;
   addIngredient: (ingredient: string) => void;
   removeIngredient: (ingredient: string) => void;
   cacheCocktail: (cocktail: Cocktail) => void;
   setSlideShowInterval: (interval: number) => void;
+  setKenBurnsEnabled: (enabled: boolean) => void;
+  setFilmGrainEnabled: (enabled: boolean) => void;
+  setRetroFilterEnabled: (enabled: boolean) => void;
+  setTransitionSpeed: (speed: 'slow' | 'normal' | 'fast') => void;
   clearIngredients: () => void;
   loadDefaultIngredients: () => void;
+  toggleTried: (cocktailId: string) => void;
+  toggleHearted: (cocktailId: string) => void;
+  setCocktailNote: (cocktailId: string, note: string) => void;
 }

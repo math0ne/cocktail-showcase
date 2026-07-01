@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import {
   Box,
   Container,
@@ -8,25 +9,40 @@ import {
   VStack,
   HStack,
   Button,
+  ButtonGroup,
   Flex,
-  Badge,
   useColorModeValue,
+  Icon,
 } from '@chakra-ui/react';
 import Link from 'next/link';
+import { CocktailGrid } from '@/components/CocktailGrid';
 import { IngredientPicker } from '@/components/IngredientPicker';
 import { IngredientList } from '@/components/IngredientList';
+import { FreshIngredients } from '@/components/FreshIngredients';
 import { ColorModeToggle } from '@/components/ColorModeToggle';
 import { useStore } from '@/store/useStore';
 import { useCocktails } from '@/hooks/useCocktails';
 
+// Simple cocktail glass SVG logo
+const CocktailLogo = (props: any) => (
+  <Icon viewBox="0 0 24 24" {...props}>
+    <path
+      fill="currentColor"
+      d="M7.5 7l-2-2h13l-2 2h-9zm0 0l4.5 6v6H9v2h6v-2h-3v-6l4.5-6H7.5zM5 3h14l-3 4h-8L5 3z"
+    />
+  </Icon>
+);
+
+type ViewMode = 'bar' | 'drinks';
+
 export default function HomePage() {
+  const [view, setView] = useState<ViewMode>('drinks');
   const myIngredients = useStore((state) => state.myIngredients);
   const { fullMatches, matches } = useCocktails();
 
   // Semantic colors
   const bgPage = useColorModeValue('gray.50', 'gray.900');
   const bgSurface = useColorModeValue('white', 'gray.800');
-  const bgHeader = useColorModeValue('white', 'gray.850');
   const borderColor = useColorModeValue('gray.200', 'gray.700');
   const textPrimary = useColorModeValue('gray.800', 'gray.100');
   const textSecondary = useColorModeValue('gray.600', 'gray.400');
@@ -41,145 +57,148 @@ export default function HomePage() {
         bg={bgSurface}
         borderBottom="1px solid"
         borderColor={borderColor}
-        py={4}
+        py={3}
+        px={{ base: 4, md: 6 }}
       >
-        <Container maxW="container.xl">
-          <Flex justify="space-between" align="center" flexWrap="wrap" gap={4}>
-            <Heading size="lg" color={accentTeal}>
-              Cocktail Showcase
-            </Heading>
+        <Flex justify="space-between" align="center" flexWrap="wrap" gap={3}>
+          {/* Logo and Stats */}
+          <HStack spacing={6}>
             <HStack spacing={2}>
-              <Link href="/cocktails" passHref legacyBehavior>
-                <Button as="a" variant="ghost" colorScheme="teal" size="sm">
-                  View Cocktails
-                  {matches.length > 0 && (
-                    <Badge ml={2} colorScheme="teal" variant="subtle">
-                      {matches.length}
-                    </Badge>
-                  )}
+              <CocktailLogo boxSize={7} color={accentTeal} />
+              <Heading size="md" color={accentTeal}>
+                Cocktails
+              </Heading>
+            </HStack>
+
+            {/* Stats in header */}
+            {myIngredients.length > 0 && (
+              <HStack spacing={4} display={{ base: 'none', md: 'flex' }}>
+                <HStack spacing={1}>
+                  <Text fontSize="lg" fontWeight="bold" color={accentTeal}>
+                    {myIngredients.length}
+                  </Text>
+                  <Text color={textSecondary} fontSize="xs">ingredients</Text>
+                </HStack>
+                <HStack spacing={1}>
+                  <Text fontSize="lg" fontWeight="bold" color={accentGreen}>
+                    {fullMatches.length}
+                  </Text>
+                  <Text color={textSecondary} fontSize="xs">ready</Text>
+                </HStack>
+                <HStack spacing={1}>
+                  <Text fontSize="lg" fontWeight="bold" color={accentOrange}>
+                    {matches.length - fullMatches.length}
+                  </Text>
+                  <Text color={textSecondary} fontSize="xs">close</Text>
+                </HStack>
+              </HStack>
+            )}
+          </HStack>
+
+          {/* Actions */}
+          <HStack spacing={3}>
+            {/* Navigation Toggle */}
+            <ButtonGroup isAttached size="sm">
+              <Button
+                colorScheme="teal"
+                variant={view === 'bar' ? 'solid' : 'outline'}
+                onClick={() => setView('bar')}
+              >
+                Bar
+              </Button>
+              <Button
+                colorScheme="teal"
+                variant={view === 'drinks' ? 'solid' : 'outline'}
+                onClick={() => setView('drinks')}
+              >
+                Drinks
+              </Button>
+            </ButtonGroup>
+            {fullMatches.length > 0 && (
+              <Link href="/slideshow" passHref legacyBehavior>
+                <Button as="a" colorScheme="teal" size="sm" display={{ base: 'none', md: 'inline-flex' }}>
+                  Slideshow
                 </Button>
               </Link>
-              {fullMatches.length > 0 && (
-                <Link href="/slideshow" passHref legacyBehavior>
-                  <Button as="a" colorScheme="teal" size="sm">
-                    Slideshow
-                    <Badge ml={2} colorScheme="green" variant="solid">
-                      {fullMatches.length}
-                    </Badge>
-                  </Button>
-                </Link>
-              )}
-              <ColorModeToggle />
-            </HStack>
-          </Flex>
-        </Container>
+            )}
+            <ColorModeToggle />
+          </HStack>
+        </Flex>
       </Box>
 
       {/* Main Content */}
-      <Container maxW="container.xl" py={8}>
-        <VStack spacing={8} align="stretch">
-          <Box textAlign="center">
-            <Heading size="xl" mb={2} color={textPrimary}>
-              What&apos;s in Your Bar?
-            </Heading>
-            <Text color={textSecondary} fontSize="lg">
-              Add the ingredients you have and discover cocktails you can make
-            </Text>
-          </Box>
-
-          {/* Stats */}
-          {myIngredients.length > 0 && (
-            <HStack justify="center" spacing={8}>
-              <VStack spacing={0}>
-                <Text fontSize="3xl" fontWeight="bold" color={accentTeal}>
-                  {myIngredients.length}
-                </Text>
-                <Text color={textSecondary} fontSize="sm">Ingredients</Text>
-              </VStack>
-              <VStack spacing={0}>
-                <Text fontSize="3xl" fontWeight="bold" color={accentGreen}>
-                  {fullMatches.length}
-                </Text>
-                <Text color={textSecondary} fontSize="sm">Ready to Make</Text>
-              </VStack>
-              <VStack spacing={0}>
-                <Text fontSize="3xl" fontWeight="bold" color={accentOrange}>
-                  {matches.length - fullMatches.length}
-                </Text>
-                <Text color={textSecondary} fontSize="sm">Almost Ready</Text>
-              </VStack>
-            </HStack>
-          )}
-
-          <Box
-            display="grid"
-            gridTemplateColumns={{ base: '1fr', lg: '1fr 1fr' }}
-            gap={6}
-          >
-            {/* Ingredient Picker */}
+      {view === 'drinks' ? (
+        <Box px={{ base: 4, md: 6 }} py={6}>
+          <CocktailGrid />
+        </Box>
+      ) : (
+        <Container maxW="container.xl" py={6}>
+          <VStack spacing={6} align="stretch">
+            {/* Quick Toggles */}
             <Box
               bg={bgSurface}
-              borderRadius="xl"
-              border="1px solid"
-              borderColor={borderColor}
-              shadow="sm"
-              position="relative"
-            >
-              <Box
-                position="absolute"
-                inset={0}
-                p={6}
-                display="flex"
-                flexDirection="column"
-                overflow="hidden"
-              >
-                <Heading size="md" mb={4} color={textPrimary} flexShrink={0}>
-                  Add Ingredients
-                </Heading>
-                <Box flex={1} minH={0} overflow="hidden">
-                  <IngredientPicker />
-                </Box>
-              </Box>
-            </Box>
-
-            {/* Ingredient List */}
-            <Box
-              bg={bgSurface}
-              p={6}
+              p={4}
               borderRadius="xl"
               border="1px solid"
               borderColor={borderColor}
               shadow="sm"
             >
               <Heading size="md" mb={4} color={textPrimary}>
-                Your Bar Stock
+                Quick Toggles
               </Heading>
-              <IngredientList />
+              <FreshIngredients />
             </Box>
-          </Box>
 
-          {/* Call to Action */}
-          {fullMatches.length > 0 && (
-            <Box textAlign="center" py={6}>
-              <Text color={textSecondary} mb={4}>
-                You can make {fullMatches.length} cocktails right now!
-              </Text>
-              <HStack justify="center" spacing={4}>
-                <Link href="/cocktails" passHref legacyBehavior>
-                  <Button as="a" size="lg" colorScheme="teal" variant="outline">
-                    Browse All
-                  </Button>
-                </Link>
-                <Link href="/slideshow" passHref legacyBehavior>
-                  <Button as="a" size="lg" colorScheme="teal">
-                    Start Slideshow
-                  </Button>
-                </Link>
-              </HStack>
+            <Box
+              display="grid"
+              gridTemplateColumns={{ base: '1fr', lg: '1fr 1fr' }}
+              gap={6}
+            >
+              {/* Ingredient List */}
+              <Box
+                bg={bgSurface}
+                p={6}
+                borderRadius="xl"
+                border="1px solid"
+                borderColor={borderColor}
+                shadow="sm"
+              >
+                <Heading size="md" mb={4} color={textPrimary}>
+                  Your Bar Stock
+                </Heading>
+                <IngredientList />
+              </Box>
+
+              {/* Ingredient Picker */}
+              <Box
+                bg={bgSurface}
+                borderRadius="xl"
+                border="1px solid"
+                borderColor={borderColor}
+                shadow="sm"
+                position="relative"
+                minH={{ base: '400px', lg: 'auto' }}
+              >
+                <Box
+                  position="absolute"
+                  inset={0}
+                  p={6}
+                  display="flex"
+                  flexDirection="column"
+                  overflow="hidden"
+                >
+                  <Heading size="md" mb={4} color={textPrimary} flexShrink={0}>
+                    Add Ingredients
+                  </Heading>
+                  <Box flex={1} minH={0} overflow="hidden">
+                    <IngredientPicker />
+                  </Box>
+                </Box>
+              </Box>
             </Box>
-          )}
-        </VStack>
-      </Container>
+          </VStack>
+        </Container>
+      )}
     </Box>
   );
 }

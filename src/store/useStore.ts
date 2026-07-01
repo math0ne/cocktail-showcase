@@ -42,7 +42,14 @@ export const useStore = create<AppState>()(
       cachedCocktails: {},
       slideShowSettings: {
         interval: 8,
+        kenBurnsEnabled: true,
+        filmGrainEnabled: true,
+        retroFilterEnabled: false,
+        transitionSpeed: 'normal' as const,
       },
+      triedCocktails: [],
+      heartedCocktails: [],
+      cocktailNotes: {},
 
       addIngredient: (ingredient: string) =>
         set((state) => {
@@ -84,6 +91,38 @@ export const useStore = create<AppState>()(
           },
         })),
 
+      setKenBurnsEnabled: (enabled: boolean) =>
+        set((state) => ({
+          slideShowSettings: {
+            ...state.slideShowSettings,
+            kenBurnsEnabled: enabled,
+          },
+        })),
+
+      setFilmGrainEnabled: (enabled: boolean) =>
+        set((state) => ({
+          slideShowSettings: {
+            ...state.slideShowSettings,
+            filmGrainEnabled: enabled,
+          },
+        })),
+
+      setRetroFilterEnabled: (enabled: boolean) =>
+        set((state) => ({
+          slideShowSettings: {
+            ...state.slideShowSettings,
+            retroFilterEnabled: enabled,
+          },
+        })),
+
+      setTransitionSpeed: (speed: 'slow' | 'normal' | 'fast') =>
+        set((state) => ({
+          slideShowSettings: {
+            ...state.slideShowSettings,
+            transitionSpeed: speed,
+          },
+        })),
+
       clearIngredients: () =>
         set(() => ({
           myIngredients: [],
@@ -94,6 +133,28 @@ export const useStore = create<AppState>()(
           myIngredients: [...DEFAULT_INGREDIENTS].sort((a, b) =>
             a.toLowerCase().localeCompare(b.toLowerCase())
           ),
+        })),
+
+      toggleTried: (cocktailId: string) =>
+        set((state) => ({
+          triedCocktails: state.triedCocktails.includes(cocktailId)
+            ? state.triedCocktails.filter((id) => id !== cocktailId)
+            : [...state.triedCocktails, cocktailId],
+        })),
+
+      toggleHearted: (cocktailId: string) =>
+        set((state) => ({
+          heartedCocktails: state.heartedCocktails.includes(cocktailId)
+            ? state.heartedCocktails.filter((id) => id !== cocktailId)
+            : [...state.heartedCocktails, cocktailId],
+        })),
+
+      setCocktailNote: (cocktailId: string, note: string) =>
+        set((state) => ({
+          cocktailNotes: {
+            ...state.cocktailNotes,
+            [cocktailId]: note,
+          },
         })),
     }),
     {

@@ -2,7 +2,6 @@
 
 import {
   Box,
-  Flex,
   Tag,
   TagLabel,
   TagCloseButton,
@@ -18,12 +17,10 @@ import { ShoppingList } from './ShoppingList';
 export function IngredientList() {
   const myIngredients = useStore((state) => state.myIngredients);
   const removeIngredient = useStore((state) => state.removeIngredient);
-  const clearIngredients = useStore((state) => state.clearIngredients);
   const loadDefaultIngredients = useStore((state) => state.loadDefaultIngredients);
 
   const bgEmpty = useColorModeValue('gray.100', 'gray.700');
   const textMuted = useColorModeValue('gray.500', 'gray.400');
-  const textPrimary = useColorModeValue('gray.700', 'gray.200');
 
   if (myIngredients.length === 0) {
     return (
@@ -50,30 +47,6 @@ export function IngredientList() {
 
   return (
     <Box>
-      <Flex justify="space-between" align="center" mb={3}>
-        <Text fontWeight="medium" color={textPrimary}>
-          Your Ingredients ({myIngredients.length})
-        </Text>
-        <Flex gap={2}>
-          <Button
-            size="xs"
-            variant="ghost"
-            colorScheme="teal"
-            onClick={loadDefaultIngredients}
-          >
-            Reset
-          </Button>
-          <Button
-            size="xs"
-            variant="ghost"
-            colorScheme="red"
-            onClick={clearIngredients}
-          >
-            Clear
-          </Button>
-        </Flex>
-      </Flex>
-
       <Wrap spacing={2}>
         {myIngredients.map((ingredient) => (
           <WrapItem key={ingredient}>
