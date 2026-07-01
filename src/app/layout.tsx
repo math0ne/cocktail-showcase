@@ -25,7 +25,15 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" style={{ height: '100%', backgroundColor: '#000' }}>
-      <body style={{ margin: 0, padding: 0, minHeight: '100%', height: '100%', backgroundColor: '#000' }}>
+      <body style={{
+        margin: 0,
+        padding: 0,
+        minHeight: '100%',
+        minHeight: '-webkit-fill-available',
+        height: '100%',
+        backgroundColor: '#000',
+        overflow: 'hidden',
+      }}>
         <Providers>{children}</Providers>
       </body>
     </html>

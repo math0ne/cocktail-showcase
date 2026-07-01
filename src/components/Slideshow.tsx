@@ -477,8 +477,11 @@ export function Slideshow() {
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
       sx={{
-        inset: '-50px',
-        padding: '50px',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        minHeight: '-webkit-fill-available',
         touchAction: 'manipulation',
         overscrollBehavior: 'none',
         userSelect: 'none',
