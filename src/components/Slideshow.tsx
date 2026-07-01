@@ -15,8 +15,6 @@ import {
   useDisclosure,
   Badge,
   Image,
-  Button,
-  Icon,
 } from '@chakra-ui/react';
 import {
   ChevronLeftIcon,
@@ -25,7 +23,6 @@ import {
   CloseIcon,
   InfoIcon,
 } from '@chakra-ui/icons';
-import { FaExpand, FaCompress } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCocktails } from '@/hooks/useCocktails';
 import { useStore } from '@/store/useStore';
@@ -96,6 +93,33 @@ export function Slideshow() {
     };
     document.addEventListener('fullscreenchange', handleFullscreenChange);
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
+
+  // Auto-enter fullscreen on mount
+  useEffect(() => {
+    const enterFullscreen = async () => {
+      try {
+        if (!document.fullscreenElement) {
+          await document.documentElement.requestFullscreen();
+          setIsFullscreen(true);
+        }
+      } catch (err) {
+        console.log('Auto-fullscreen not supported:', err);
+      }
+    };
+    enterFullscreen();
+  }, []);
+
+  // Exit fullscreen and navigate back
+  const handleExit = useCallback(async () => {
+    try {
+      if (document.fullscreenElement) {
+        await document.exitFullscreen();
+      }
+    } catch (err) {
+      console.log('Exit fullscreen error:', err);
+    }
+    window.location.href = '/';
   }, []);
 
   // Wake Lock to prevent device sleep
@@ -433,18 +457,15 @@ export function Slideshow() {
           right: { base: 'calc(1.5rem + env(safe-area-inset-right))', md: 'calc(2rem + env(safe-area-inset-right))' },
         }}
       >
-        <Link href="/" passHref legacyBehavior>
-          <IconButton
-            as="a"
-            aria-label="Exit Slideshow"
-            icon={<CloseIcon boxSize={4} color="white" />}
-            bg="blackAlpha.500"
-            _hover={{ bg: 'blackAlpha.700' }}
-            size="lg"
-            isRound
-            onClick={(e) => e.stopPropagation()}
-          />
-        </Link>
+        <IconButton
+          aria-label="Exit Slideshow"
+          icon={<CloseIcon boxSize={4} color="white" />}
+          onClick={(e) => { e.stopPropagation(); handleExit(); }}
+          bg="blackAlpha.500"
+          _hover={{ bg: 'blackAlpha.700' }}
+          size="lg"
+          isRound
+        />
         <IconButton
           aria-label="Previous"
           icon={<ChevronLeftIcon boxSize={6} color="white" />}
@@ -467,15 +488,6 @@ export function Slideshow() {
           aria-label="View Instructions"
           icon={<InfoIcon boxSize={5} color="white" />}
           onClick={(e) => { e.stopPropagation(); openDetails(); }}
-          bg="blackAlpha.500"
-          _hover={{ bg: 'blackAlpha.700' }}
-          size="lg"
-          isRound
-        />
-        <IconButton
-          aria-label="Toggle Fullscreen"
-          icon={<Icon as={isFullscreen ? FaCompress : FaExpand} color="white" />}
-          onClick={(e) => { e.stopPropagation(); toggleFullscreen(); }}
           bg="blackAlpha.500"
           _hover={{ bg: 'blackAlpha.700' }}
           size="lg"
