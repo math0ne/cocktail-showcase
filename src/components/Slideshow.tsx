@@ -180,10 +180,16 @@ export function Slideshow() {
 
   // Touch swipe handlers
   const handleTouchStart = (e: React.TouchEvent) => {
+    e.preventDefault();
     setTouchStart(e.touches[0].clientX);
   };
 
+  const handleTouchMove = (e: React.TouchEvent) => {
+    e.preventDefault();
+  };
+
   const handleTouchEnd = (e: React.TouchEvent) => {
+    e.preventDefault();
     if (touchStart === null) return;
 
     const touchEnd = e.changedTouches[0].clientX;
@@ -238,13 +244,23 @@ export function Slideshow() {
     <Box
       h="100dvh"
       w="100vw"
-      position="relative"
+      position="fixed"
+      top={0}
+      left={0}
       overflow="hidden"
       bg="black"
       onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
       onClick={() => setIsPaused((p) => !p)}
       cursor="pointer"
+      sx={{
+        touchAction: 'none',
+        overscrollBehavior: 'none',
+        WebkitOverflowScrolling: 'auto',
+        userSelect: 'none',
+        WebkitUserSelect: 'none',
+      }}
     >
       {/* Blurred Background */}
       <AnimatePresence mode="wait">
