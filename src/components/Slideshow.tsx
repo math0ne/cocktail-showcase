@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import {
   Box,
   Flex,
@@ -237,6 +238,12 @@ export function Slideshow() {
       window.removeEventListener('orientationchange', updateHeight);
       window.visualViewport?.removeEventListener('resize', updateHeight);
     };
+  }, []);
+
+  // Track if component is mounted (for portal)
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
   }, []);
 
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -512,8 +519,8 @@ export function Slideshow() {
 
   const cocktail = currentMatch.cocktail;
 
-  // Use raw div for the outer container to bypass any framework quirks
-  return (
+  // Use portal to render directly into body, bypassing all parent constraints
+  const slideshowContent = (
     <div
       style={{
         position: 'fixed',
@@ -1125,4 +1132,8 @@ export function Slideshow() {
     </Box>
     </div>
   );
+
+  // Render via portal directly into body to bypass any parent constraints
+  if (!mounted) return null;
+  return createPortal(slideshowContent, document.body);
 }
