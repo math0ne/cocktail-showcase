@@ -503,25 +503,36 @@ export function Slideshow() {
 
   const cocktail = currentMatch.cocktail;
 
+  // Use raw div for the outer container to bypass any framework quirks
   return (
-    <Box
-      position="fixed"
-      top={0}
-      left={0}
-      width="100vw"
-      height={viewportHeight ? `${viewportHeight}px` : '100vh'}
-      overflow="hidden"
-      bg="black"
-      zIndex={9999}
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
-      sx={{
+    <div
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        width: '100vw',
+        height: viewportHeight ? `${viewportHeight}px` : '100vh',
+        backgroundColor: '#000',
+        zIndex: 9999,
+        overflow: 'hidden',
         touchAction: 'manipulation',
         overscrollBehavior: 'none',
         userSelect: 'none',
         WebkitUserSelect: 'none',
-      }}
+      } as React.CSSProperties}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+    >
+    <Box
+      position="absolute"
+      top={0}
+      left={0}
+      right={0}
+      bottom={0}
+      overflow="hidden"
     >
       {/* Progress Bar - Glassmorphism Style */}
       <Box
@@ -1103,5 +1114,6 @@ export function Slideshow() {
         onClose={closeDetails}
       />
     </Box>
+    </div>
   );
 }
