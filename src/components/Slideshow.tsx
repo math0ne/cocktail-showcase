@@ -477,14 +477,8 @@ export function Slideshow() {
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
       sx={{
-        top: 'calc(-1 * env(safe-area-inset-top, 0px))',
-        left: 'calc(-1 * env(safe-area-inset-left, 0px))',
-        right: 'calc(-1 * env(safe-area-inset-right, 0px))',
-        bottom: 'calc(-1 * env(safe-area-inset-bottom, 0px))',
-        paddingTop: 'env(safe-area-inset-top, 0px)',
-        paddingLeft: 'env(safe-area-inset-left, 0px)',
-        paddingRight: 'env(safe-area-inset-right, 0px)',
-        paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+        inset: '-50px',
+        padding: '50px',
         touchAction: 'manipulation',
         overscrollBehavior: 'none',
         userSelect: 'none',
@@ -653,7 +647,7 @@ export function Slideshow() {
           borderTopRightRadius="2xl"
           boxShadow="8px 0 32px rgba(0, 0, 0, 0.3)"
           sx={{
-            bottom: { base: 'calc(env(safe-area-inset-bottom, 0px) + 1rem)', md: 'calc(env(safe-area-inset-bottom, 0px) + 1.5rem)' },
+            bottom: { base: 'calc(env(safe-area-inset-bottom, 0px) + 0.75rem)', md: 'calc(env(safe-area-inset-bottom, 0px) + 1rem)' },
             paddingLeft: { base: '1.5rem', md: '2rem' },
             paddingRight: { base: '1.5rem', md: '2rem' },
             paddingBottom: { base: '1.5rem', md: '2rem' },
@@ -776,7 +770,7 @@ export function Slideshow() {
         borderColor="whiteAlpha.200"
         boxShadow="-8px 0 32px rgba(0, 0, 0, 0.3)"
         sx={{
-          top: { base: 'calc(env(safe-area-inset-top, 0px) + 1rem)', md: 'calc(env(safe-area-inset-top, 0px) + 1.5rem)' },
+          top: { base: 'calc(env(safe-area-inset-top, 0px) + 0.75rem)', md: 'calc(env(safe-area-inset-top, 0px) + 1rem)' },
           right: 0,
         }}
       >
@@ -877,7 +871,7 @@ export function Slideshow() {
               animate="visible"
               exit="exit"
               sx={{
-                bottom: { base: 'calc(env(safe-area-inset-bottom, 0px) + 1rem)', md: 'calc(env(safe-area-inset-bottom, 0px) + 1.5rem)' },
+                bottom: { base: 'calc(env(safe-area-inset-bottom, 0px) + 0.75rem)', md: 'calc(env(safe-area-inset-bottom, 0px) + 1rem)' },
               }}
               cursor="pointer"
               onClick={(e) => { e.stopPropagation(); goNext(); resetTimer(); }}
