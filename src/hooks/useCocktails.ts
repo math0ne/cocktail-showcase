@@ -6,20 +6,37 @@ import { matchCocktails, sortByMatch } from '@/lib/matching';
 import { useStore } from '@/store/useStore';
 import type { Cocktail, CocktailMatch } from '@/types';
 
-// Cache all cocktails in memory to avoid repeated fetches
-let cocktailsCache: Cocktail[] | null = null;
-let cachePromise: Promise<Cocktail[]> | null = null;
+// Cache that survives HMR by attaching to window in development
+interface CocktailCache {
+  cocktails: Cocktail[] | null;
+  promise: Promise<Cocktail[]> | null;
+}
+
+function getCache(): CocktailCache {
+  if (typeof window !== 'undefined') {
+    // Use window object to survive HMR in development
+    const w = window as Window & { __cocktailCache?: CocktailCache };
+    if (!w.__cocktailCache) {
+      w.__cocktailCache = { cocktails: null, promise: null };
+    }
+    return w.__cocktailCache;
+  }
+  // Server-side fallback
+  return { cocktails: null, promise: null };
+}
 
 async function getAllCocktails(): Promise<Cocktail[]> {
-  if (cocktailsCache) return cocktailsCache;
-  if (cachePromise) return cachePromise;
+  const cache = getCache();
 
-  cachePromise = fetchAllCocktails().then(cocktails => {
-    cocktailsCache = cocktails;
+  if (cache.cocktails) return cache.cocktails;
+  if (cache.promise) return cache.promise;
+
+  cache.promise = fetchAllCocktails().then(cocktails => {
+    cache.cocktails = cocktails;
     return cocktails;
   });
 
-  return cachePromise;
+  return cache.promise;
 }
 
 export function useCocktails(browseAll: boolean = false) {
