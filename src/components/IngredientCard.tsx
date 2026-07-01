@@ -39,13 +39,13 @@ export function IngredientCard({ ingredient, isAdded, onClick }: IngredientCardP
       onClick={isAdded ? undefined : onClick}
     >
       {/* Image container */}
-      <Box position="relative" overflow="hidden">
+      <Box position="relative" overflow="hidden" p={3} pb={0}>
         <Image
           src={imageUrl}
           alt={ingredient}
           w="100%"
           aspectRatio="1"
-          objectFit="cover"
+          objectFit="contain"
           fallback={
             <Box
               w="100%"
@@ -64,8 +64,8 @@ export function IngredientCard({ ingredient, isAdded, onClick }: IngredientCardP
         {isAdded ? (
           <Badge
             position="absolute"
-            top={2}
-            right={2}
+            top={4}
+            right={4}
             colorScheme="green"
             fontSize="xs"
             px={2}
@@ -80,8 +80,8 @@ export function IngredientCard({ ingredient, isAdded, onClick }: IngredientCardP
         ) : (
           <Box
             position="absolute"
-            top={2}
-            right={2}
+            top={4}
+            right={4}
             bg="blackAlpha.600"
             borderRadius="full"
             w={6}
