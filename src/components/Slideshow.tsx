@@ -237,7 +237,7 @@ export function Slideshow() {
 
   return (
     <Box
-      h="100vh"
+      h="100dvh"
       w="100vw"
       position="relative"
       overflow="hidden"
@@ -336,12 +336,17 @@ export function Slideshow() {
           bottom={0}
           left={0}
           right={{ base: 0, md: '200px' }}
-          p={{ base: 6, md: 12 }}
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
           transition={{ duration: 0.6, delay: 0.2 }}
           pointerEvents="none"
+          sx={{
+            padding: {
+              base: 'calc(1.5rem + env(safe-area-inset-bottom)) calc(1.5rem + env(safe-area-inset-right)) calc(1.5rem + env(safe-area-inset-bottom)) calc(1.5rem + env(safe-area-inset-left))',
+              md: 'calc(3rem + env(safe-area-inset-bottom)) calc(3rem + env(safe-area-inset-right)) calc(3rem + env(safe-area-inset-bottom)) calc(3rem + env(safe-area-inset-left))',
+            },
+          }}
         >
           <VStack align="start" spacing={4} maxW="800px">
             <Text
@@ -396,10 +401,12 @@ export function Slideshow() {
       {/* Navigation Controls */}
       <HStack
         position="absolute"
-        bottom={6}
-        right={6}
         spacing={2}
         zIndex={100}
+        sx={{
+          bottom: 'calc(1.5rem + env(safe-area-inset-bottom))',
+          right: 'calc(1.5rem + env(safe-area-inset-right))',
+        }}
       >
         <IconButton
           aria-label="Previous"
@@ -451,11 +458,13 @@ export function Slideshow() {
       {/* Progress indicator */}
       <HStack
         position="absolute"
-        top={6}
         left="50%"
         transform="translateX(-50%)"
         spacing={2}
         zIndex={100}
+        sx={{
+          top: 'calc(1.5rem + env(safe-area-inset-top))',
+        }}
       >
         {shuffledMatches.map((_, i) => (
           <Box
@@ -478,13 +487,15 @@ export function Slideshow() {
       {isPaused && (
         <Box
           position="absolute"
-          top={6}
-          right={6}
           bg="blackAlpha.700"
           px={3}
           py={1}
           borderRadius="md"
           zIndex={100}
+          sx={{
+            top: 'calc(1.5rem + env(safe-area-inset-top))',
+            right: 'calc(1.5rem + env(safe-area-inset-right))',
+          }}
         >
           <Text color="white" fontSize="sm">
             PAUSED
@@ -495,10 +506,12 @@ export function Slideshow() {
       {/* Exit button and cocktail counter */}
       <HStack
         position="absolute"
-        top={6}
-        left={6}
         spacing={3}
         zIndex={100}
+        sx={{
+          top: 'calc(1.5rem + env(safe-area-inset-top))',
+          left: 'calc(1.5rem + env(safe-area-inset-left))',
+        }}
       >
         <Link href="/" passHref legacyBehavior>
           <IconButton
