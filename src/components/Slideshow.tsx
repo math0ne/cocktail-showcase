@@ -33,14 +33,32 @@ import { CocktailModal } from './CocktailModal';
 const MotionBox = motion(Box);
 const MotionImage = motion(Image);
 
-// Different Ken Burns animation patterns
+// Different Ken Burns animation patterns - varied directions and zoom in/out
 const kenBurnsVariants = [
-  { scale: [1, 1.15], x: ['0%', '5%'], y: ['0%', '3%'] },
-  { scale: [1.1, 1], x: ['5%', '0%'], y: ['3%', '0%'] },
-  { scale: [1, 1.12], x: ['0%', '-5%'], y: ['0%', '5%'] },
-  { scale: [1.08, 1], x: ['-3%', '0%'], y: ['5%', '0%'] },
-  { scale: [1, 1.1], x: ['0%', '3%'], y: ['0%', '-3%'] },
-  { scale: [1.15, 1.05], x: ['5%', '-2%'], y: ['-3%', '2%'] },
+  // Zoom in + move right-down
+  { scale: [1, 1.12], x: ['0%', '4%'], y: ['0%', '3%'] },
+  // Zoom out + move left-up
+  { scale: [1.15, 1], x: ['4%', '0%'], y: ['3%', '0%'] },
+  // Zoom in + move left-down
+  { scale: [1, 1.1], x: ['0%', '-4%'], y: ['0%', '3%'] },
+  // Zoom out + move right-up
+  { scale: [1.12, 1], x: ['-4%', '0%'], y: ['3%', '0%'] },
+  // Zoom in + move up (centering)
+  { scale: [1, 1.15], x: ['0%', '0%'], y: ['3%', '-2%'] },
+  // Zoom out + move down (centering)
+  { scale: [1.15, 1], x: ['0%', '0%'], y: ['-2%', '3%'] },
+  // Zoom in + diagonal top-left to bottom-right
+  { scale: [1, 1.1], x: ['-3%', '3%'], y: ['-2%', '2%'] },
+  // Zoom out + diagonal bottom-right to top-left
+  { scale: [1.12, 1], x: ['3%', '-3%'], y: ['2%', '-2%'] },
+  // Zoom in + move left (horizontal pan)
+  { scale: [1, 1.08], x: ['3%', '-3%'], y: ['0%', '0%'] },
+  // Zoom in + move right (horizontal pan)
+  { scale: [1, 1.08], x: ['-3%', '3%'], y: ['0%', '0%'] },
+  // Subtle zoom out + slight drift up
+  { scale: [1.1, 1.02], x: ['2%', '-1%'], y: ['2%', '-1%'] },
+  // Subtle zoom in + slight drift down
+  { scale: [1.02, 1.1], x: ['-1%', '2%'], y: ['-1%', '2%'] },
 ];
 
 // Fisher-Yates shuffle
