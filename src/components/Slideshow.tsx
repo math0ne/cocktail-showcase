@@ -524,12 +524,12 @@ export function Slideshow() {
     <div
       style={{
         position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        width: '100vw',
-        height: viewportHeight ? `${viewportHeight}px` : '100vh',
+        top: '-50px',
+        left: '-50px',
+        right: '-50px',
+        bottom: '-50px',
+        width: 'calc(100vw + 100px)',
+        height: 'calc(100vh + 100px)',
         backgroundColor: '#000',
         zIndex: 9999,
         overflow: 'hidden',
@@ -544,10 +544,10 @@ export function Slideshow() {
     >
     <Box
       position="absolute"
-      top={0}
-      left={0}
-      right={0}
-      bottom={0}
+      top="50px"
+      left="50px"
+      right="50px"
+      bottom="50px"
       overflow="hidden"
     >
       {/* Progress Bar - Glassmorphism Style */}
