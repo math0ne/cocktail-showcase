@@ -11,12 +11,13 @@ import {
   Text,
   Badge,
   VStack,
-  HStack,
   Box,
   Divider,
   List,
   ListItem,
   ListIcon,
+  Wrap,
+  WrapItem,
   useColorModeValue,
 } from '@chakra-ui/react';
 import { CheckCircleIcon, WarningIcon } from '@chakra-ui/icons';
@@ -60,17 +61,30 @@ export function CocktailModal({ match, isOpen, onClose }: CocktailModalProps) {
             />
 
             {/* Badges */}
-            <HStack spacing={2} flexWrap="wrap">
-              <Badge colorScheme={isFullMatch ? 'green' : 'orange'} fontSize="sm">
-                {isFullMatch ? 'Ready to Make' : `Missing ${missingIngredients.length}`}
-              </Badge>
-              <Badge colorScheme="purple" fontSize="sm">
-                {cocktail.category}
-              </Badge>
-              <Badge colorScheme="blue" fontSize="sm">
-                {cocktail.glass}
-              </Badge>
-            </HStack>
+            <Wrap spacing={2}>
+              <WrapItem>
+                <Badge colorScheme={isFullMatch ? 'green' : 'orange'} fontSize="sm">
+                  {isFullMatch ? 'Ready to Make' : `Missing ${missingIngredients.length}`}
+                </Badge>
+              </WrapItem>
+              <WrapItem>
+                <Badge colorScheme="purple" fontSize="sm">
+                  {cocktail.category}
+                </Badge>
+              </WrapItem>
+              <WrapItem>
+                <Badge colorScheme="blue" fontSize="sm">
+                  {cocktail.glass}
+                </Badge>
+              </WrapItem>
+              {cocktail.tags.map((tag) => (
+                <WrapItem key={tag}>
+                  <Badge colorScheme="teal" fontSize="sm">
+                    {tag}
+                  </Badge>
+                </WrapItem>
+              ))}
+            </Wrap>
 
             <Divider borderColor={borderColor} />
 

@@ -373,7 +373,7 @@ export function Slideshow() {
               {cocktail.name}
             </Text>
 
-            <HStack spacing={3} flexWrap="wrap" align="center">
+            <HStack spacing={2} flexWrap="wrap" align="center">
               <Badge
                 colorScheme="purple"
                 fontSize={{ base: 'sm', md: 'md' }}
@@ -392,6 +392,18 @@ export function Slideshow() {
               >
                 {cocktail.glass}
               </Badge>
+              {cocktail.tags.map((tag) => (
+                <Badge
+                  key={tag}
+                  colorScheme="teal"
+                  fontSize={{ base: 'xs', md: 'sm' }}
+                  px={2}
+                  py={0.5}
+                  textShadow="1px 1px 2px rgba(0,0,0,0.5)"
+                >
+                  {tag}
+                </Badge>
+              ))}
             </HStack>
 
             <VStack align="start" spacing={1}>

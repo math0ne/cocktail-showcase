@@ -70,12 +70,23 @@ export function CocktailCard({ match, onClick }: CocktailCardProps) {
           {cocktail.name}
         </Text>
 
-        <HStack spacing={2} flexWrap="wrap" align="center">
-          <Badge colorScheme="purple" variant="subtle" fontSize="xs">
-            {cocktail.category}
-          </Badge>
-          <Text fontSize="xs" color={textMuted}>{cocktail.glass}</Text>
-        </HStack>
+        <Wrap spacing={1} align="center">
+          <WrapItem>
+            <Badge colorScheme="purple" variant="subtle" fontSize="xs">
+              {cocktail.category}
+            </Badge>
+          </WrapItem>
+          {cocktail.tags.map((tag) => (
+            <WrapItem key={tag}>
+              <Badge colorScheme="teal" variant="subtle" fontSize="2xs">
+                {tag}
+              </Badge>
+            </WrapItem>
+          ))}
+          <WrapItem>
+            <Text fontSize="xs" color={textMuted}>{cocktail.glass}</Text>
+          </WrapItem>
+        </Wrap>
 
         <Box>
           <Text fontSize="xs" fontWeight="medium" mb={1} color={textMuted}>
