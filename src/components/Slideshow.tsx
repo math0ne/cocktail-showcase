@@ -63,6 +63,7 @@ export function Slideshow() {
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [timerReset, setTimerReset] = useState(0); // Used to reset auto-advance timer
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showFullscreenPrompt, setShowFullscreenPrompt] = useState(true);
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
   const { isOpen: showSettings, onToggle: toggleSettings } = useDisclosure();
   const { isOpen: showDetails, onOpen: openDetails, onClose: closeDetailsModal } = useDisclosure();
@@ -95,19 +96,34 @@ export function Slideshow() {
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
   }, []);
 
-  // Auto-enter fullscreen on mount
+  // Auto-enter fullscreen on mount (works on desktop, not iOS)
   useEffect(() => {
     const enterFullscreen = async () => {
       try {
-        if (!document.fullscreenElement) {
+        if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
           await document.documentElement.requestFullscreen();
           setIsFullscreen(true);
+          setShowFullscreenPrompt(false);
         }
       } catch (err) {
+        // Auto-fullscreen failed, keep prompt visible for user gesture
         console.log('Auto-fullscreen not supported:', err);
       }
     };
     enterFullscreen();
+  }, []);
+
+  // Handle fullscreen prompt tap
+  const handleFullscreenPrompt = useCallback(async () => {
+    try {
+      if (document.documentElement.requestFullscreen) {
+        await document.documentElement.requestFullscreen();
+        setIsFullscreen(true);
+      }
+    } catch (err) {
+      console.log('Fullscreen error:', err);
+    }
+    setShowFullscreenPrompt(false);
   }, []);
 
   // Exit fullscreen and navigate back
@@ -503,6 +519,30 @@ export function Slideshow() {
           isRound
         />
       </HStack>
+
+      {/* Fullscreen Prompt (for iOS/iPad) */}
+      {showFullscreenPrompt && !isFullscreen && (
+        <Box
+          position="absolute"
+          inset={0}
+          bg="blackAlpha.800"
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+          zIndex={200}
+          onClick={handleFullscreenPrompt}
+          cursor="pointer"
+        >
+          <VStack spacing={4}>
+            <Text color="white" fontSize="2xl" fontWeight="bold" textAlign="center">
+              Tap to Enter Fullscreen
+            </Text>
+            <Text color="whiteAlpha.700" fontSize="md" textAlign="center">
+              For the best experience
+            </Text>
+          </VStack>
+        </Box>
+      )}
 
       {/* Settings Panel */}
       {showSettings && (
