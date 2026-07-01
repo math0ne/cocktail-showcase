@@ -32,6 +32,97 @@ import { CocktailModal } from './CocktailModal';
 
 const MotionBox = motion(Box);
 const MotionImage = motion(Image);
+const MotionText = motion(Text);
+const MotionHStack = motion(HStack);
+const MotionVStack = motion(VStack);
+
+// Slide-in card animation variants
+const cardVariants = {
+  hidden: { opacity: 0, x: -40 },
+  visible: {
+    opacity: 1,
+    x: 0,
+    transition: {
+      duration: 0.5,
+      ease: [0.25, 0.46, 0.45, 0.94],
+      staggerChildren: 0.1,
+      delayChildren: 0.2,
+    },
+  },
+  exit: {
+    opacity: 0,
+    x: -30,
+    transition: {
+      duration: 0.3,
+    },
+  },
+};
+
+// Staggered text animation variants
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.1,
+    },
+  },
+  exit: {
+    opacity: 0,
+    transition: {
+      staggerChildren: 0.05,
+      staggerDirection: -1,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 30, filter: 'blur(8px)' },
+  visible: {
+    opacity: 1,
+    y: 0,
+    filter: 'blur(0px)',
+    transition: {
+      duration: 0.6,
+      ease: [0.25, 0.46, 0.45, 0.94], // easeOutQuad
+    },
+  },
+  exit: {
+    opacity: 0,
+    y: -15,
+    filter: 'blur(4px)',
+    transition: {
+      duration: 0.3,
+    },
+  },
+};
+
+const badgeContainerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.06,
+      delayChildren: 0.1,
+    },
+  },
+  exit: { opacity: 0 },
+};
+
+const badgeVariants = {
+  hidden: { opacity: 0, scale: 0.8, y: 10 },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    y: 0,
+    transition: {
+      duration: 0.4,
+      ease: 'easeOut',
+    },
+  },
+  exit: { opacity: 0, scale: 0.9 },
+};
 
 // Different Ken Burns animation patterns - varied directions and zoom in/out
 const kenBurnsVariants = [
@@ -77,7 +168,6 @@ export function Slideshow() {
   const setSlideShowInterval = useStore((state) => state.setSlideShowInterval);
 
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [timerReset, setTimerReset] = useState(0); // Used to reset auto-advance timer
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -195,6 +285,8 @@ export function Slideshow() {
   }, [fullMatches]);
 
   const currentMatch: CocktailMatch | undefined = shuffledMatches[currentIndex];
+  const nextIndex = (currentIndex + 1) % shuffledMatches.length;
+  const nextMatch: CocktailMatch | undefined = shuffledMatches[nextIndex];
 
   // Get a consistent Ken Burns variant for each slide
   const kenBurnsVariant = useMemo(() => {
@@ -215,37 +307,41 @@ export function Slideshow() {
 
   // Auto-advance (pause when modal is open, reset on manual navigation)
   useEffect(() => {
-    if (isPaused || showDetails || shuffledMatches.length <= 1) return;
+    if (showDetails || shuffledMatches.length <= 1) return;
 
     const timer = setInterval(goNext, interval * 1000);
     return () => clearInterval(timer);
-  }, [isPaused, showDetails, interval, shuffledMatches.length, goNext, timerReset]);
+  }, [showDetails, interval, shuffledMatches.length, goNext, timerReset]);
 
   // Progress bar animation
   useEffect(() => {
-    if (isPaused || showDetails || shuffledMatches.length <= 1) {
+    if (showDetails || shuffledMatches.length <= 1) {
+      setProgress(0);
       return;
     }
 
+    // Reset progress at the start of each slide
     setProgress(0);
     progressRef.current = 0;
-    const startTime = Date.now();
+
+    let animationId: number;
+    const startTime = performance.now();
     const duration = interval * 1000;
 
-    const animate = () => {
-      const elapsed = Date.now() - startTime;
+    const animate = (currentTime: number) => {
+      const elapsed = currentTime - startTime;
       const newProgress = Math.min((elapsed / duration) * 100, 100);
       setProgress(newProgress);
       progressRef.current = newProgress;
 
       if (newProgress < 100) {
-        requestAnimationFrame(animate);
+        animationId = requestAnimationFrame(animate);
       }
     };
 
-    const frameId = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(frameId);
-  }, [isPaused, showDetails, interval, shuffledMatches.length, timerReset, currentIndex]);
+    animationId = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(animationId);
+  }, [showDetails, interval, shuffledMatches.length, currentIndex, timerReset]);
 
   // Keyboard navigation
   useEffect(() => {
@@ -253,10 +349,7 @@ export function Slideshow() {
       if (showDetails) return; // Don't navigate when modal is open
       if (e.key === 'ArrowRight') goNext();
       else if (e.key === 'ArrowLeft') goPrev();
-      else if (e.key === ' ') {
-        e.preventDefault();
-        setIsPaused((p) => !p);
-      } else if (e.key === 'Escape') toggleSettings();
+      else if (e.key === 'Escape') toggleSettings();
     };
 
     window.addEventListener('keydown', handleKeyDown);
@@ -338,8 +431,6 @@ export function Slideshow() {
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
-      onClick={() => setIsPaused((p) => !p)}
-      cursor="pointer"
       sx={{
         touchAction: 'manipulation',
         overscrollBehavior: 'none',
@@ -347,23 +438,23 @@ export function Slideshow() {
         WebkitUserSelect: 'none',
       }}
     >
-      {/* Progress Bar */}
+      {/* Progress Bar - Glassmorphism Style */}
       <Box
         position="absolute"
         top={0}
         left={0}
         right={0}
         h="3px"
-        bg="whiteAlpha.200"
-        zIndex={150}
+        bg="rgba(255,255,255,0.1)"
+        backdropFilter="blur(8px)"
+        zIndex={200}
         overflow="hidden"
       >
         <Box
           h="100%"
-          bg="linear-gradient(90deg, rgba(255,255,255,0.8) 0%, rgba(255,255,255,1) 100%)"
-          w={`${progress}%`}
-          transition="width 0.1s linear"
-          boxShadow="0 0 10px rgba(255,255,255,0.5)"
+          bg="linear-gradient(90deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.5) 100%)"
+          style={{ width: `${progress}%` }}
+          boxShadow="0 0 8px rgba(255,255,255,0.2)"
         />
       </Box>
 
@@ -373,10 +464,10 @@ export function Slideshow() {
           key={cocktail.id + '-bg'}
           position="absolute"
           inset={-20}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.8 }}
+          initial={{ opacity: 0, scale: 1.1 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.95 }}
+          transition={{ duration: 1.2, ease: [0.4, 0, 0.2, 1] }}
           pointerEvents="none"
         >
           <Box
@@ -407,10 +498,10 @@ export function Slideshow() {
           display="flex"
           alignItems="center"
           justifyContent="center"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.8 }}
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 1.02 }}
+          transition={{ duration: 1, ease: [0.4, 0, 0.2, 1] }}
           pointerEvents="none"
         >
           <MotionImage
@@ -450,103 +541,155 @@ export function Slideshow() {
         pointerEvents="none"
       />
 
-      {/* Content */}
+      {/* Film Grain Overlay */}
+      <Box
+        position="absolute"
+        inset={0}
+        pointerEvents="none"
+        zIndex={50}
+        opacity={0.4}
+        mixBlendMode="overlay"
+        sx={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
+          backgroundRepeat: 'repeat',
+          backgroundSize: '150px 150px',
+        }}
+      />
+
+      {/* Content Card - Glassmorphism with slide-in */}
       <AnimatePresence mode="wait">
         <MotionBox
           key={cocktail.id + '-content'}
           position="absolute"
-          bottom={0}
           left={0}
-          right={{ base: 0, md: '200px' }}
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
+          variants={cardVariants}
+          initial="hidden"
+          animate="visible"
+          exit="exit"
           pointerEvents="none"
+          bg="whiteAlpha.100"
+          backdropFilter="blur(20px)"
+          border="1px solid"
+          borderColor="whiteAlpha.200"
+          borderLeft="none"
+          borderBottomLeftRadius={0}
+          borderTopLeftRadius={0}
+          borderBottomRightRadius="2xl"
+          borderTopRightRadius="2xl"
+          boxShadow="8px 0 32px rgba(0, 0, 0, 0.3)"
           sx={{
-            paddingLeft: { base: 'calc(1.5rem + env(safe-area-inset-left))', md: 'calc(2rem + env(safe-area-inset-left))' },
-            paddingRight: { base: 'calc(1.5rem + env(safe-area-inset-right))', md: 'calc(2rem + env(safe-area-inset-right))' },
-            paddingBottom: { base: 'calc(1.5rem + env(safe-area-inset-bottom))', md: 'calc(2rem + env(safe-area-inset-bottom))' },
+            bottom: { base: 'calc(1.25rem + env(safe-area-inset-bottom))', md: 'calc(1.75rem + env(safe-area-inset-bottom))' },
+            paddingLeft: { base: '1.5rem', md: '2rem' },
+            paddingRight: { base: '1.5rem', md: '2rem' },
+            paddingBottom: { base: '1.5rem', md: '2rem' },
             paddingTop: { base: '1.5rem', md: '2rem' },
           }}
         >
-          <VStack align="start" spacing={4} maxW="800px">
-            <Text
-              fontSize={{ base: '3xl', md: '5xl', lg: '6xl' }}
+          <VStack align="start" spacing={4} maxW="700px">
+            {/* Title */}
+            <MotionText
+              variants={itemVariants}
+              fontSize={{ base: '2xl', md: '4xl', lg: '5xl' }}
               fontWeight="bold"
               color="white"
-              textShadow="2px 2px 8px rgba(0,0,0,0.8)"
               lineHeight="1.1"
             >
               {cocktail.name}
-            </Text>
+            </MotionText>
 
-            <HStack spacing={2} flexWrap="wrap" align="center">
-              <Badge
-                colorScheme="purple"
-                fontSize={{ base: 'sm', md: 'md' }}
-                px={3}
-                py={1}
-                textShadow="1px 1px 2px rgba(0,0,0,0.5)"
-              >
-                {cocktail.category}
-              </Badge>
-              <Badge
-                colorScheme="blue"
-                fontSize={{ base: 'sm', md: 'md' }}
-                px={3}
-                py={1}
-                textShadow="1px 1px 2px rgba(0,0,0,0.5)"
-              >
-                {cocktail.glass}
-              </Badge>
-              {cocktail.tags.map((tag) => (
+            {/* Badges */}
+            <MotionHStack
+              spacing={2}
+              flexWrap="wrap"
+              align="center"
+              variants={containerVariants}
+            >
+              <MotionBox variants={badgeVariants}>
                 <Badge
-                  key={tag}
-                  colorScheme="teal"
-                  fontSize={{ base: 'sm', md: 'md' }}
-                  px={3}
+                  colorScheme="purple"
+                  fontSize={{ base: 'xs', md: 'sm' }}
+                  px={2}
                   py={1}
-                  textShadow="1px 1px 2px rgba(0,0,0,0.5)"
                 >
-                  {tag}
+                  {cocktail.category}
                 </Badge>
+              </MotionBox>
+              <MotionBox variants={badgeVariants}>
+                <Badge
+                  colorScheme="blue"
+                  fontSize={{ base: 'xs', md: 'sm' }}
+                  px={2}
+                  py={1}
+                >
+                  {cocktail.glass}
+                </Badge>
+              </MotionBox>
+              {cocktail.tags.map((tag) => (
+                <MotionBox key={tag} variants={badgeVariants}>
+                  <Badge
+                    colorScheme="teal"
+                    fontSize={{ base: 'xs', md: 'sm' }}
+                    px={2}
+                    py={1}
+                  >
+                    {tag}
+                  </Badge>
+                </MotionBox>
               ))}
-            </HStack>
+            </MotionHStack>
 
-            <VStack align="start" spacing={1}>
+            {/* Ingredients */}
+            <MotionVStack align="start" spacing={1} variants={itemVariants}>
               {cocktail.ingredients.map((ing, index) => (
                 <Text
                   key={`${ing.name}-${index}`}
                   color="whiteAlpha.900"
-                  fontSize={{ base: 'md', md: 'lg' }}
-                  textShadow="1px 1px 4px rgba(0,0,0,0.8)"
+                  fontSize={{ base: 'sm', md: 'md' }}
                 >
                   {ing.measure && `${ing.measure} `}
                   {ing.name}
                 </Text>
               ))}
-            </VStack>
+            </MotionVStack>
           </VStack>
         </MotionBox>
       </AnimatePresence>
 
-      {/* Navigation Controls */}
+      {/* Navigation Controls - Glassmorphism Style */}
       <HStack
         position="absolute"
-        spacing={2}
+        spacing={3}
         zIndex={100}
+        py={3}
+        pl={4}
+        pr={6}
+        mr={-4}
+        bg="whiteAlpha.100"
+        backdropFilter="blur(20px)"
+        borderTopLeftRadius="full"
+        borderBottomLeftRadius="full"
+        borderTopRightRadius={0}
+        borderBottomRightRadius={0}
+        border="1px solid"
+        borderRight="none"
+        borderColor="whiteAlpha.200"
+        boxShadow="-8px 0 32px rgba(0, 0, 0, 0.3)"
         sx={{
-          bottom: { base: 'calc(0.5rem + env(safe-area-inset-bottom))', md: 'calc(1rem + env(safe-area-inset-bottom))' },
-          right: { base: 'calc(1.5rem + env(safe-area-inset-right))', md: 'calc(2rem + env(safe-area-inset-right))' },
+          top: { base: 'calc(1rem + env(safe-area-inset-top))', md: 'calc(1.5rem + env(safe-area-inset-top))' },
+          right: 0,
         }}
       >
         <IconButton
           aria-label="Exit Slideshow"
           icon={<CloseIcon boxSize={4} color="white" />}
           onClick={(e) => { e.stopPropagation(); handleExit(); }}
-          bg="blackAlpha.500"
-          _hover={{ bg: 'blackAlpha.700' }}
+          bg="whiteAlpha.100"
+          backdropFilter="blur(8px)"
+          border="1px solid"
+          borderColor="whiteAlpha.200"
+          _hover={{ bg: 'whiteAlpha.300', borderColor: 'whiteAlpha.400' }}
+          _active={{ bg: 'whiteAlpha.400' }}
+          transition="all 0.2s ease"
           size="lg"
           isRound
         />
@@ -554,8 +697,13 @@ export function Slideshow() {
           aria-label="Previous"
           icon={<ChevronLeftIcon boxSize={6} color="white" />}
           onClick={(e) => { e.stopPropagation(); goPrev(); resetTimer(); }}
-          bg="blackAlpha.500"
-          _hover={{ bg: 'blackAlpha.700' }}
+          bg="whiteAlpha.100"
+          backdropFilter="blur(8px)"
+          border="1px solid"
+          borderColor="whiteAlpha.200"
+          _hover={{ bg: 'whiteAlpha.300', borderColor: 'whiteAlpha.400' }}
+          _active={{ bg: 'whiteAlpha.400' }}
+          transition="all 0.2s ease"
           size="lg"
           isRound
         />
@@ -563,8 +711,13 @@ export function Slideshow() {
           aria-label="Next"
           icon={<ChevronRightIcon boxSize={6} color="white" />}
           onClick={(e) => { e.stopPropagation(); goNext(); resetTimer(); }}
-          bg="blackAlpha.500"
-          _hover={{ bg: 'blackAlpha.700' }}
+          bg="whiteAlpha.100"
+          backdropFilter="blur(8px)"
+          border="1px solid"
+          borderColor="whiteAlpha.200"
+          _hover={{ bg: 'whiteAlpha.300', borderColor: 'whiteAlpha.400' }}
+          _active={{ bg: 'whiteAlpha.400' }}
+          transition="all 0.2s ease"
           size="lg"
           isRound
         />
@@ -572,8 +725,13 @@ export function Slideshow() {
           aria-label="View Instructions"
           icon={<InfoIcon boxSize={5} color="white" />}
           onClick={(e) => { e.stopPropagation(); openDetails(); }}
-          bg="blackAlpha.500"
-          _hover={{ bg: 'blackAlpha.700' }}
+          bg="whiteAlpha.100"
+          backdropFilter="blur(8px)"
+          border="1px solid"
+          borderColor="whiteAlpha.200"
+          _hover={{ bg: 'whiteAlpha.300', borderColor: 'whiteAlpha.400' }}
+          _active={{ bg: 'whiteAlpha.400' }}
+          transition="all 0.2s ease"
           size="lg"
           isRound
         />
@@ -581,19 +739,88 @@ export function Slideshow() {
           aria-label="Settings"
           icon={<SettingsIcon color="white" />}
           onClick={(e) => { e.stopPropagation(); toggleSettings(); }}
-          bg="blackAlpha.500"
-          _hover={{ bg: 'blackAlpha.700' }}
+          bg="whiteAlpha.100"
+          backdropFilter="blur(8px)"
+          border="1px solid"
+          borderColor="whiteAlpha.200"
+          _hover={{ bg: 'whiteAlpha.300', borderColor: 'whiteAlpha.400' }}
+          _active={{ bg: 'whiteAlpha.400' }}
+          transition="all 0.2s ease"
           size="lg"
           isRound
         />
       </HStack>
 
-      {/* Fullscreen Prompt (for iOS/iPad) */}
+      {/* Next Drink Preview - Bottom Right */}
+      {nextMatch && shuffledMatches.length > 1 && (
+        <Box
+          position="absolute"
+          right={0}
+          zIndex={100}
+          py={3}
+          pl={4}
+          pr={4}
+          bg="whiteAlpha.100"
+          backdropFilter="blur(20px)"
+          borderTopLeftRadius="2xl"
+          borderBottomLeftRadius="2xl"
+          border="1px solid"
+          borderRight="none"
+          borderColor="whiteAlpha.200"
+          boxShadow="-8px 0 32px rgba(0, 0, 0, 0.3)"
+          sx={{
+            bottom: { base: 'calc(1.25rem + env(safe-area-inset-bottom))', md: 'calc(1.75rem + env(safe-area-inset-bottom))' },
+          }}
+          cursor="pointer"
+          onClick={(e) => { e.stopPropagation(); goNext(); resetTimer(); }}
+          _hover={{ bg: 'whiteAlpha.200' }}
+          transition="all 0.2s ease"
+        >
+          <HStack spacing={3}>
+            <Box
+              w={{ base: '50px', md: '60px' }}
+              h={{ base: '50px', md: '60px' }}
+              borderRadius="lg"
+              overflow="hidden"
+              flexShrink={0}
+            >
+              <Image
+                src={nextMatch.cocktail.thumbnail}
+                alt={nextMatch.cocktail.name}
+                w="100%"
+                h="100%"
+                objectFit="cover"
+              />
+            </Box>
+            <VStack align="start" spacing={0}>
+              <Text
+                color="whiteAlpha.600"
+                fontSize={{ base: 'xs', md: 'sm' }}
+                fontWeight="medium"
+              >
+                Up Next
+              </Text>
+              <Text
+                color="white"
+                fontSize={{ base: 'sm', md: 'md' }}
+                fontWeight="semibold"
+                noOfLines={1}
+                maxW={{ base: '120px', md: '160px' }}
+              >
+                {nextMatch.cocktail.name}
+              </Text>
+            </VStack>
+          </HStack>
+        </Box>
+      )}
+
+      {/* Fullscreen Prompt (for iOS/iPad) - Glassmorphism Style */}
       {showFullscreenPrompt && !isFullscreen && (
         <Box
           position="absolute"
           inset={0}
-          bg="blackAlpha.800"
+          bg="rgba(0, 0, 0, 0.7)"
+          backdropFilter="blur(8px)"
           display="flex"
           alignItems="center"
           justifyContent="center"
@@ -601,7 +828,16 @@ export function Slideshow() {
           onClick={handleFullscreenPrompt}
           cursor="pointer"
         >
-          <VStack spacing={4}>
+          <VStack
+            spacing={4}
+            p={8}
+            bg="whiteAlpha.100"
+            backdropFilter="blur(16px)"
+            borderRadius="2xl"
+            border="1px solid"
+            borderColor="whiteAlpha.200"
+            boxShadow="0 8px 32px rgba(0, 0, 0, 0.4)"
+          >
             <Text color="white" fontSize="2xl" fontWeight="bold" textAlign="center">
               Tap to Enter Fullscreen
             </Text>
@@ -612,16 +848,19 @@ export function Slideshow() {
         </Box>
       )}
 
-      {/* Settings Panel */}
+      {/* Settings Panel - Glassmorphism Style */}
       {showSettings && (
         <Box
           position="absolute"
           top={0}
           right={0}
           bottom={0}
-          w={{ base: '100%', md: '320px' }}
-          bg="blackAlpha.900"
-          backdropFilter="blur(10px)"
+          w={{ base: '100%', md: '360px' }}
+          bg="rgba(0, 0, 0, 0.6)"
+          backdropFilter="blur(24px)"
+          borderLeft="1px solid"
+          borderColor="whiteAlpha.200"
+          boxShadow="-8px 0 32px rgba(0, 0, 0, 0.4)"
           p={6}
           onClick={(e) => e.stopPropagation()}
         >
@@ -671,7 +910,7 @@ export function Slideshow() {
             </Link>
 
             <Text color="whiteAlpha.600" fontSize="sm">
-              Keyboard: Arrow keys to navigate, Space to pause
+              Keyboard: Arrow keys to navigate
             </Text>
           </VStack>
         </Box>
