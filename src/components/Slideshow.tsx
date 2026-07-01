@@ -429,7 +429,7 @@ export function Slideshow() {
         spacing={2}
         zIndex={100}
         sx={{
-          bottom: { base: 'calc(1.5rem + env(safe-area-inset-bottom))', md: 'calc(2rem + env(safe-area-inset-bottom))' },
+          bottom: { base: 'calc(1rem + env(safe-area-inset-bottom))', md: 'calc(1.5rem + env(safe-area-inset-bottom))' },
           right: { base: 'calc(1.5rem + env(safe-area-inset-right))', md: 'calc(2rem + env(safe-area-inset-right))' },
         }}
       >
