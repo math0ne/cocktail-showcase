@@ -153,8 +153,7 @@ export function Slideshow() {
 
   const closeDetails = useCallback(() => {
     closeDetailsModal();
-    goNext();
-  }, [closeDetailsModal, goNext]);
+  }, [closeDetailsModal]);
 
   // Auto-advance (pause when modal is open, reset on manual navigation)
   useEffect(() => {
