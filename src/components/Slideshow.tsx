@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
   Box,
   Flex,
@@ -16,6 +16,7 @@ import {
   Badge,
   Image,
   Button,
+  Icon,
 } from '@chakra-ui/react';
 import {
   ChevronLeftIcon,
@@ -25,6 +26,7 @@ import {
   ArrowBackIcon,
   InfoIcon,
 } from '@chakra-ui/icons';
+import { FaExpand, FaCompress } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCocktails } from '@/hooks/useCocktails';
 import { useStore } from '@/store/useStore';
@@ -65,11 +67,68 @@ export function Slideshow() {
   const [isPaused, setIsPaused] = useState(false);
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [timerReset, setTimerReset] = useState(0); // Used to reset auto-advance timer
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const wakeLockRef = useRef<WakeLockSentinel | null>(null);
   const { isOpen: showSettings, onToggle: toggleSettings } = useDisclosure();
   const { isOpen: showDetails, onOpen: openDetails, onClose: closeDetailsModal } = useDisclosure();
 
   const resetTimer = useCallback(() => {
     setTimerReset((t) => t + 1);
+  }, []);
+
+  // Fullscreen toggle
+  const toggleFullscreen = useCallback(async () => {
+    try {
+      if (!document.fullscreenElement) {
+        await document.documentElement.requestFullscreen();
+        setIsFullscreen(true);
+      } else {
+        await document.exitFullscreen();
+        setIsFullscreen(false);
+      }
+    } catch (err) {
+      console.error('Fullscreen error:', err);
+    }
+  }, []);
+
+  // Listen for fullscreen changes (e.g., user presses Escape)
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
+
+  // Wake Lock to prevent device sleep
+  useEffect(() => {
+    const requestWakeLock = async () => {
+      try {
+        if ('wakeLock' in navigator) {
+          wakeLockRef.current = await navigator.wakeLock.request('screen');
+        }
+      } catch (err) {
+        console.log('Wake Lock not supported or failed:', err);
+      }
+    };
+
+    requestWakeLock();
+
+    // Re-request wake lock when page becomes visible again
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        requestWakeLock();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      if (wakeLockRef.current) {
+        wakeLockRef.current.release();
+        wakeLockRef.current = null;
+      }
+    };
   }, []);
 
   // Shuffle cocktails once when they load
@@ -365,6 +424,15 @@ export function Slideshow() {
           aria-label="View Instructions"
           icon={<InfoIcon boxSize={5} color="white" />}
           onClick={openDetails}
+          bg="blackAlpha.500"
+          _hover={{ bg: 'blackAlpha.700' }}
+          size="lg"
+          isRound
+        />
+        <IconButton
+          aria-label="Toggle Fullscreen"
+          icon={<Icon as={isFullscreen ? FaCompress : FaExpand} color="white" />}
+          onClick={toggleFullscreen}
           bg="blackAlpha.500"
           _hover={{ bg: 'blackAlpha.700' }}
           size="lg"
