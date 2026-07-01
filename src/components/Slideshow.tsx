@@ -491,17 +491,17 @@ export function Slideshow() {
   return (
     <Box
       position="fixed"
+      top={0}
+      left={0}
+      right={0}
+      bottom={0}
       overflow="hidden"
       bg="black"
+      zIndex={9999}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
       sx={{
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        minHeight: '-webkit-fill-available',
         touchAction: 'manipulation',
         overscrollBehavior: 'none',
         userSelect: 'none',
