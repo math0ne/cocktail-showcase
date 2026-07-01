@@ -219,14 +219,23 @@ export function Slideshow() {
   const [viewportHeight, setViewportHeight] = useState<number | null>(null);
   useEffect(() => {
     const updateHeight = () => {
-      setViewportHeight(window.innerHeight);
+      // Try multiple methods to get the most accurate height
+      // Add 50px buffer to ensure we cover any safe area gaps
+      const vh = Math.max(
+        window.visualViewport?.height || 0,
+        window.innerHeight,
+        document.documentElement.clientHeight
+      ) + 50;
+      setViewportHeight(vh);
     };
     updateHeight();
     window.addEventListener('resize', updateHeight);
     window.addEventListener('orientationchange', updateHeight);
+    window.visualViewport?.addEventListener('resize', updateHeight);
     return () => {
       window.removeEventListener('resize', updateHeight);
       window.removeEventListener('orientationchange', updateHeight);
+      window.visualViewport?.removeEventListener('resize', updateHeight);
     };
   }, []);
 
