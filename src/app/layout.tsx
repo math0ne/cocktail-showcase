@@ -28,7 +28,6 @@ export default function RootLayout({
       <body style={{
         margin: 0,
         padding: 0,
-        minHeight: '100%',
         minHeight: '-webkit-fill-available',
         height: '100%',
         backgroundColor: '#000',
