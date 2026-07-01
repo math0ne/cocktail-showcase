@@ -31,7 +31,6 @@ import { useCocktails } from '@/hooks/useCocktails';
 import { useStore } from '@/store/useStore';
 import Link from 'next/link';
 import type { CocktailMatch } from '@/types';
-import { GlassIcon } from './GlassIcon';
 import { CocktailModal } from './CocktailModal';
 
 const MotionBox = motion(Box);
@@ -393,7 +392,6 @@ export function Slideshow() {
               >
                 {cocktail.glass}
               </Badge>
-              <GlassIcon glass={cocktail.glass} size="xl" showTooltip={false} />
             </HStack>
 
             <VStack align="start" spacing={1}>

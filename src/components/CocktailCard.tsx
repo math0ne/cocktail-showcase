@@ -12,7 +12,6 @@ import {
   useColorModeValue,
 } from '@chakra-ui/react';
 import type { CocktailMatch } from '@/types';
-import { GlassIcon } from './GlassIcon';
 
 interface CocktailCardProps {
   match: CocktailMatch;
@@ -75,10 +74,7 @@ export function CocktailCard({ match, onClick }: CocktailCardProps) {
           <Badge colorScheme="purple" variant="subtle" fontSize="xs">
             {cocktail.category}
           </Badge>
-          <HStack spacing={1}>
-            <GlassIcon glass={cocktail.glass} size="sm" />
-            <Text fontSize="xs" color={textMuted}>{cocktail.glass}</Text>
-          </HStack>
+          <Text fontSize="xs" color={textMuted}>{cocktail.glass}</Text>
         </HStack>
 
         <Box>

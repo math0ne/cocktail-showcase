@@ -21,7 +21,6 @@ import {
 } from '@chakra-ui/react';
 import { CheckCircleIcon, WarningIcon } from '@chakra-ui/icons';
 import type { CocktailMatch } from '@/types';
-import { GlassIcon } from './GlassIcon';
 
 interface CocktailModalProps {
   match: CocktailMatch | null;
@@ -68,12 +67,9 @@ export function CocktailModal({ match, isOpen, onClose }: CocktailModalProps) {
               <Badge colorScheme="purple" fontSize="sm">
                 {cocktail.category}
               </Badge>
-              <HStack spacing={1}>
-                <Badge colorScheme="blue" fontSize="sm">
-                  {cocktail.glass}
-                </Badge>
-                <GlassIcon glass={cocktail.glass} size="md" />
-              </HStack>
+              <Badge colorScheme="blue" fontSize="sm">
+                {cocktail.glass}
+              </Badge>
             </HStack>
 
             <Divider borderColor={borderColor} />
