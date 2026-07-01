@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { createPortal } from 'react-dom';
 import {
   Box,
   Flex,
@@ -27,6 +26,7 @@ import {
   FormLabel,
   Select,
   Divider,
+  Portal,
 } from '@chakra-ui/react';
 import {
   ChevronLeftIcon,
@@ -1131,7 +1131,7 @@ export function Slideshow() {
     </div>
   );
 
-  // Render via portal directly into body to bypass any parent constraints
+  // Render via Chakra's Portal to maintain context while bypassing parent constraints
   if (!mounted) return null;
-  return createPortal(slideshowContent, document.body);
+  return <Portal>{slideshowContent}</Portal>;
 }
