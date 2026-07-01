@@ -24,13 +24,24 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" style={{ height: '100%' }}>
-      <body style={{
-        margin: 0,
-        padding: 0,
-        minHeight: '100%',
-        height: '100%',
-      }}>
+    <html lang="en">
+      <head>
+        <style dangerouslySetInnerHTML={{ __html: `
+          html {
+            height: 100%;
+            min-height: calc(100% + env(safe-area-inset-top));
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+            background: #000;
+          }
+          body {
+            margin: 0;
+            padding: 0;
+            min-height: 100%;
+            height: 100%;
+          }
+        `}} />
+      </head>
+      <body>
         <Providers>{children}</Providers>
       </body>
     </html>
