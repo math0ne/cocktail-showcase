@@ -106,6 +106,7 @@ export interface AppState {
   setTransitionSpeed: (speed: 'slow' | 'normal' | 'fast') => void;
   clearIngredients: () => void;
   loadDefaultIngredients: () => void;
+  setIngredients: (ingredients: string[]) => void;
   toggleTried: (cocktailId: string) => void;
   toggleHearted: (cocktailId: string) => void;
   setCocktailNote: (cocktailId: string, note: string) => void;

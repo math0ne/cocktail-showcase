@@ -135,6 +135,13 @@ export const useStore = create<AppState>()(
           ),
         })),
 
+      setIngredients: (ingredients: string[]) =>
+        set(() => ({
+          myIngredients: [...ingredients].sort((a, b) =>
+            a.toLowerCase().localeCompare(b.toLowerCase())
+          ),
+        })),
+
       toggleTried: (cocktailId: string) =>
         set((state) => ({
           triedCocktails: state.triedCocktails.includes(cocktailId)
