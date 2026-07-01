@@ -405,7 +405,7 @@ export function Slideshow() {
         <IconButton
           aria-label="Previous"
           icon={<ChevronLeftIcon boxSize={6} color="white" />}
-          onClick={() => { goPrev(); resetTimer(); }}
+          onClick={(e) => { e.stopPropagation(); goPrev(); resetTimer(); }}
           bg="blackAlpha.500"
           _hover={{ bg: 'blackAlpha.700' }}
           size="lg"
@@ -414,7 +414,7 @@ export function Slideshow() {
         <IconButton
           aria-label="Next"
           icon={<ChevronRightIcon boxSize={6} color="white" />}
-          onClick={() => { goNext(); resetTimer(); }}
+          onClick={(e) => { e.stopPropagation(); goNext(); resetTimer(); }}
           bg="blackAlpha.500"
           _hover={{ bg: 'blackAlpha.700' }}
           size="lg"
@@ -423,7 +423,7 @@ export function Slideshow() {
         <IconButton
           aria-label="View Instructions"
           icon={<InfoIcon boxSize={5} color="white" />}
-          onClick={openDetails}
+          onClick={(e) => { e.stopPropagation(); openDetails(); }}
           bg="blackAlpha.500"
           _hover={{ bg: 'blackAlpha.700' }}
           size="lg"
@@ -432,7 +432,7 @@ export function Slideshow() {
         <IconButton
           aria-label="Toggle Fullscreen"
           icon={<Icon as={isFullscreen ? FaCompress : FaExpand} color="white" />}
-          onClick={toggleFullscreen}
+          onClick={(e) => { e.stopPropagation(); toggleFullscreen(); }}
           bg="blackAlpha.500"
           _hover={{ bg: 'blackAlpha.700' }}
           size="lg"
@@ -441,7 +441,7 @@ export function Slideshow() {
         <IconButton
           aria-label="Settings"
           icon={<SettingsIcon color="white" />}
-          onClick={toggleSettings}
+          onClick={(e) => { e.stopPropagation(); toggleSettings(); }}
           bg="blackAlpha.500"
           _hover={{ bg: 'blackAlpha.700' }}
           size="lg"
