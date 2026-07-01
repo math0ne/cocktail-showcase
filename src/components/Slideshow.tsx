@@ -215,6 +215,21 @@ export function Slideshow() {
     setIsPWA(isStandalone);
   }, []);
 
+  // Track actual viewport height (fixes iOS/iPad height issues)
+  const [viewportHeight, setViewportHeight] = useState<number | null>(null);
+  useEffect(() => {
+    const updateHeight = () => {
+      setViewportHeight(window.innerHeight);
+    };
+    updateHeight();
+    window.addEventListener('resize', updateHeight);
+    window.addEventListener('orientationchange', updateHeight);
+    return () => {
+      window.removeEventListener('resize', updateHeight);
+      window.removeEventListener('orientationchange', updateHeight);
+    };
+  }, []);
+
   const [currentIndex, setCurrentIndex] = useState(0);
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [timerReset, setTimerReset] = useState(0); // Used to reset auto-advance timer
@@ -493,8 +508,8 @@ export function Slideshow() {
       position="fixed"
       top={0}
       left={0}
-      right={0}
-      bottom={0}
+      width="100vw"
+      height={viewportHeight ? `${viewportHeight}px` : '100vh'}
       overflow="hidden"
       bg="black"
       zIndex={9999}
