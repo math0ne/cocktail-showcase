@@ -423,6 +423,18 @@ export function Slideshow() {
           right: 'calc(1.5rem + env(safe-area-inset-right))',
         }}
       >
+        <Link href="/" passHref legacyBehavior>
+          <IconButton
+            as="a"
+            aria-label="Exit Slideshow"
+            icon={<CloseIcon boxSize={4} color="white" />}
+            bg="blackAlpha.500"
+            _hover={{ bg: 'blackAlpha.700' }}
+            size="lg"
+            isRound
+            onClick={(e) => e.stopPropagation()}
+          />
+        </Link>
         <IconButton
           aria-label="Previous"
           icon={<ChevronLeftIcon boxSize={6} color="white" />}
