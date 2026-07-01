@@ -471,16 +471,20 @@ export function Slideshow() {
   return (
     <Box
       position="fixed"
-      top={0}
-      left={0}
-      right={0}
-      bottom={0}
       overflow="hidden"
       bg="black"
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
       sx={{
+        top: 'calc(-1 * env(safe-area-inset-top, 0px))',
+        left: 'calc(-1 * env(safe-area-inset-left, 0px))',
+        right: 'calc(-1 * env(safe-area-inset-right, 0px))',
+        bottom: 'calc(-1 * env(safe-area-inset-bottom, 0px))',
+        paddingTop: 'env(safe-area-inset-top, 0px)',
+        paddingLeft: 'env(safe-area-inset-left, 0px)',
+        paddingRight: 'env(safe-area-inset-right, 0px)',
+        paddingBottom: 'env(safe-area-inset-bottom, 0px)',
         touchAction: 'manipulation',
         overscrollBehavior: 'none',
         userSelect: 'none',
