@@ -23,7 +23,6 @@ import {
   ChevronRightIcon,
   SettingsIcon,
   CloseIcon,
-  ArrowBackIcon,
   InfoIcon,
 } from '@chakra-ui/icons';
 import { FaExpand, FaCompress } from 'react-icons/fa';
@@ -453,87 +452,6 @@ export function Slideshow() {
           size="lg"
           isRound
         />
-      </HStack>
-
-      {/* Progress indicator */}
-      <HStack
-        position="absolute"
-        left="50%"
-        transform="translateX(-50%)"
-        spacing={2}
-        zIndex={100}
-        sx={{
-          top: 'calc(1.5rem + env(safe-area-inset-top))',
-        }}
-      >
-        {shuffledMatches.map((_, i) => (
-          <Box
-            key={i}
-            w={i === currentIndex ? '24px' : '8px'}
-            h="8px"
-            borderRadius="full"
-            bg={i === currentIndex ? 'white' : 'whiteAlpha.500'}
-            transition="all 0.3s"
-            cursor="pointer"
-            onClick={(e) => {
-              e.stopPropagation();
-              setCurrentIndex(i);
-            }}
-          />
-        ))}
-      </HStack>
-
-      {/* Pause indicator */}
-      {isPaused && (
-        <Box
-          position="absolute"
-          bg="blackAlpha.700"
-          px={3}
-          py={1}
-          borderRadius="md"
-          zIndex={100}
-          sx={{
-            top: 'calc(1.5rem + env(safe-area-inset-top))',
-            right: 'calc(1.5rem + env(safe-area-inset-right))',
-          }}
-        >
-          <Text color="white" fontSize="sm">
-            PAUSED
-          </Text>
-        </Box>
-      )}
-
-      {/* Exit button and cocktail counter */}
-      <HStack
-        position="absolute"
-        spacing={3}
-        zIndex={100}
-        sx={{
-          top: 'calc(1.5rem + env(safe-area-inset-top))',
-          left: 'calc(1.5rem + env(safe-area-inset-left))',
-        }}
-      >
-        <Link href="/" passHref legacyBehavior>
-          <IconButton
-            as="a"
-            aria-label="Exit Slideshow"
-            icon={<ArrowBackIcon boxSize={5} color="white" />}
-            bg="blackAlpha.500"
-            _hover={{ bg: 'blackAlpha.700' }}
-            size="md"
-            isRound
-          />
-        </Link>
-        <Box
-          bg="blackAlpha.600"
-          px={3}
-          py={1}
-          borderRadius="md"
-        >
-          <Text color="white" fontSize="sm">
-            {currentIndex + 1} / {shuffledMatches.length}
-          </Text>
-        </Box>
       </HStack>
 
       {/* Settings Panel */}
