@@ -356,10 +356,10 @@ export function Slideshow() {
           transition={{ duration: 0.6, delay: 0.2 }}
           pointerEvents="none"
           sx={{
-            padding: {
-              base: 'calc(1.5rem + env(safe-area-inset-bottom)) calc(1.5rem + env(safe-area-inset-right)) calc(1.5rem + env(safe-area-inset-bottom)) calc(1.5rem + env(safe-area-inset-left))',
-              md: 'calc(3rem + env(safe-area-inset-bottom)) calc(3rem + env(safe-area-inset-right)) calc(3rem + env(safe-area-inset-bottom)) calc(3rem + env(safe-area-inset-left))',
-            },
+            paddingLeft: { base: 'calc(1.5rem + env(safe-area-inset-left))', md: 'calc(2rem + env(safe-area-inset-left))' },
+            paddingRight: { base: 'calc(1.5rem + env(safe-area-inset-right))', md: 'calc(2rem + env(safe-area-inset-right))' },
+            paddingBottom: { base: 'calc(1.5rem + env(safe-area-inset-bottom))', md: 'calc(2rem + env(safe-area-inset-bottom))' },
+            paddingTop: { base: '1.5rem', md: '2rem' },
           }}
         >
           <VStack align="start" spacing={4} maxW="800px">
@@ -429,8 +429,8 @@ export function Slideshow() {
         spacing={2}
         zIndex={100}
         sx={{
-          bottom: 'calc(1.5rem + env(safe-area-inset-bottom))',
-          right: 'calc(1.5rem + env(safe-area-inset-right))',
+          bottom: { base: 'calc(1.5rem + env(safe-area-inset-bottom))', md: 'calc(2rem + env(safe-area-inset-bottom))' },
+          right: { base: 'calc(1.5rem + env(safe-area-inset-right))', md: 'calc(2rem + env(safe-area-inset-right))' },
         }}
       >
         <Link href="/" passHref legacyBehavior>
