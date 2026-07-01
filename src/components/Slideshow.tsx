@@ -207,6 +207,14 @@ export function Slideshow() {
 
   const { interval, kenBurnsEnabled, filmGrainEnabled, retroFilterEnabled, transitionSpeed } = slideShowSettings;
 
+  // Detect if running as PWA (standalone mode)
+  const [isPWA, setIsPWA] = useState(false);
+  useEffect(() => {
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+      || (window.navigator as any).standalone === true;
+    setIsPWA(isStandalone);
+  }, []);
+
   const [currentIndex, setCurrentIndex] = useState(0);
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [timerReset, setTimerReset] = useState(0); // Used to reset auto-advance timer
@@ -246,8 +254,15 @@ export function Slideshow() {
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
   }, []);
 
-  // Auto-enter fullscreen on mount (works on desktop, not iOS)
+  // Auto-enter fullscreen on mount (skip in PWA mode - already fullscreen)
   useEffect(() => {
+    if (isPWA) {
+      // In PWA mode, we're already "fullscreen" via the overlay
+      setShowFullscreenPrompt(false);
+      setIsFullscreen(true);
+      return;
+    }
+
     const enterFullscreen = async () => {
       try {
         if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
@@ -261,10 +276,15 @@ export function Slideshow() {
       }
     };
     enterFullscreen();
-  }, []);
+  }, [isPWA]);
 
   // Handle fullscreen prompt tap
   const handleFullscreenPrompt = useCallback(async () => {
+    if (isPWA) {
+      // Already fullscreen in PWA mode
+      setShowFullscreenPrompt(false);
+      return;
+    }
     try {
       if (document.documentElement.requestFullscreen) {
         await document.documentElement.requestFullscreen();
@@ -274,7 +294,7 @@ export function Slideshow() {
       console.log('Fullscreen error:', err);
     }
     setShowFullscreenPrompt(false);
-  }, []);
+  }, [isPWA]);
 
   // Exit fullscreen and navigate back
   const handleExit = useCallback(async () => {
