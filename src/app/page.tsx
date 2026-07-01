@@ -59,6 +59,9 @@ export default function HomePage() {
         borderColor={borderColor}
         py={3}
         px={{ base: 4, md: 6 }}
+        sx={{
+          paddingTop: 'max(0.75rem, env(safe-area-inset-top, 0.75rem))',
+        }}
       >
         <Flex justify="space-between" align="center" flexWrap="wrap" gap={3}>
           {/* Logo and Stats */}
