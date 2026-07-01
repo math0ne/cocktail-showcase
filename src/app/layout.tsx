@@ -30,7 +30,6 @@ export default function RootLayout({
           html {
             height: 100%;
             min-height: calc(100% + env(safe-area-inset-top));
-            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
             background: #000;
           }
           body {
