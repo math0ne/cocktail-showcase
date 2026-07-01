@@ -82,7 +82,9 @@ export function Slideshow() {
   const [timerReset, setTimerReset] = useState(0); // Used to reset auto-advance timer
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showFullscreenPrompt, setShowFullscreenPrompt] = useState(true);
+  const [progress, setProgress] = useState(0);
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
+  const progressRef = useRef<number>(0);
   const { isOpen: showSettings, onToggle: toggleSettings } = useDisclosure();
   const { isOpen: showDetails, onOpen: openDetails, onClose: closeDetailsModal } = useDisclosure();
 
@@ -219,6 +221,32 @@ export function Slideshow() {
     return () => clearInterval(timer);
   }, [isPaused, showDetails, interval, shuffledMatches.length, goNext, timerReset]);
 
+  // Progress bar animation
+  useEffect(() => {
+    if (isPaused || showDetails || shuffledMatches.length <= 1) {
+      return;
+    }
+
+    setProgress(0);
+    progressRef.current = 0;
+    const startTime = Date.now();
+    const duration = interval * 1000;
+
+    const animate = () => {
+      const elapsed = Date.now() - startTime;
+      const newProgress = Math.min((elapsed / duration) * 100, 100);
+      setProgress(newProgress);
+      progressRef.current = newProgress;
+
+      if (newProgress < 100) {
+        requestAnimationFrame(animate);
+      }
+    };
+
+    const frameId = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(frameId);
+  }, [isPaused, showDetails, interval, shuffledMatches.length, timerReset, currentIndex]);
+
   // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -319,6 +347,26 @@ export function Slideshow() {
         WebkitUserSelect: 'none',
       }}
     >
+      {/* Progress Bar */}
+      <Box
+        position="absolute"
+        top={0}
+        left={0}
+        right={0}
+        h="3px"
+        bg="whiteAlpha.200"
+        zIndex={150}
+        overflow="hidden"
+      >
+        <Box
+          h="100%"
+          bg="linear-gradient(90deg, rgba(255,255,255,0.8) 0%, rgba(255,255,255,1) 100%)"
+          w={`${progress}%`}
+          transition="width 0.1s linear"
+          boxShadow="0 0 10px rgba(255,255,255,0.5)"
+        />
+      </Box>
+
       {/* Blurred Background */}
       <AnimatePresence mode="wait">
         <MotionBox
