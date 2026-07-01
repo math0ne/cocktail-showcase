@@ -70,7 +70,7 @@ export function ShoppingList() {
     const result: IngredientSuggestion[] = [];
     ingredientMap.forEach((value, key) => {
       let originalCase = key;
-      for (const cocktail of value.cocktails) {
+      for (const cocktail of Array.from(value.cocktails)) {
         const ing = cocktail.ingredients.find(
           (i) => i.name.toLowerCase() === key
         );
