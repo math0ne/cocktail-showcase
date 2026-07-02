@@ -19,9 +19,10 @@ import {
   Divider,
   useDisclosure,
 } from '@chakra-ui/react';
-import { SearchIcon } from '@chakra-ui/icons';
+import { SearchIcon, AddIcon } from '@chakra-ui/icons';
 import { CocktailCard } from './CocktailCard';
 import { CocktailModal } from './CocktailModal';
+import { CreateDrinkModal } from './CreateDrinkModal';
 import { useCocktails } from '@/hooks/useCocktails';
 import { useStore } from '@/store/useStore';
 import type { CocktailMatch, DrinkSortOption, DrinkViewMode } from '@/types';
@@ -31,6 +32,7 @@ import { fuzzyMatch } from '@/lib/fuzzyMatch';
 export function CocktailGrid() {
   const [selectedMatch, setSelectedMatch] = useState<CocktailMatch | null>(null);
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const { isOpen: isCreateOpen, onOpen: onCreateOpen, onClose: onCreateClose } = useDisclosure();
 
   // Filter state from store
   const viewMode = useStore((state) => state.drinkFilters.viewMode);
@@ -332,6 +334,24 @@ export function CocktailGrid() {
                 Found {filteredAndSorted.length}
               </Text>
             )}
+
+            {/* Create Drink Button */}
+            <Button
+              size="sm"
+              h="40px"
+              px={4}
+              ml="auto"
+              leftIcon={<AddIcon boxSize={3} />}
+              bg="purple.600"
+              color="white"
+              _hover={{ bg: 'purple.500' }}
+              borderRadius="xl"
+              onClick={onCreateOpen}
+              flexShrink={0}
+              display={{ base: 'none', md: 'flex' }}
+            >
+              Create
+            </Button>
           </Flex>
         </Flex>
       </VStack>
@@ -380,6 +400,8 @@ export function CocktailGrid() {
         isOpen={isOpen}
         onClose={onClose}
       />
+
+      <CreateDrinkModal isOpen={isCreateOpen} onClose={onCreateClose} />
     </Box>
   );
 }

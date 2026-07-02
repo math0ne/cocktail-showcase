@@ -13,18 +13,15 @@ export function matchCocktails(
   );
 
   return cocktails.map((cocktail) => {
-    const cocktailIngredientNames = cocktail.ingredients.map((i) =>
-      normalizeIngredient(i.name)
-    );
-
     const matchedIngredients: string[] = [];
     const missingIngredients: string[] = [];
 
-    for (const ingredientName of cocktailIngredientNames) {
-      if (normalizedUserIngredients.has(ingredientName)) {
-        matchedIngredients.push(ingredientName);
+    for (const ingredient of cocktail.ingredients) {
+      const normalizedName = normalizeIngredient(ingredient.name);
+      if (normalizedUserIngredients.has(normalizedName)) {
+        matchedIngredients.push(ingredient.name); // Keep original casing
       } else {
-        missingIngredients.push(ingredientName);
+        missingIngredients.push(ingredient.name); // Keep original casing
       }
     }
 

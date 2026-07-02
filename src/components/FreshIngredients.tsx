@@ -5,13 +5,16 @@ import {
   Wrap,
   WrapItem,
   Button,
-  Text,
+  SimpleGrid,
 } from '@chakra-ui/react';
 import { useStore } from '@/store/useStore';
 
 const INGREDIENT_CATEGORIES = [
   {
     name: 'Fresh',
+    color: 'green',
+    bgColor: 'rgba(34, 197, 94, 0.08)',
+    borderColor: 'rgba(34, 197, 94, 0.2)',
     items: [
       'Lime',
       'Lemon',
@@ -27,6 +30,9 @@ const INGREDIENT_CATEGORIES = [
   },
   {
     name: 'Juices',
+    color: 'orange',
+    bgColor: 'rgba(251, 146, 60, 0.08)',
+    borderColor: 'rgba(251, 146, 60, 0.2)',
     items: [
       'Orange Juice',
       'Cranberry Juice',
@@ -40,6 +46,9 @@ const INGREDIENT_CATEGORIES = [
   },
   {
     name: 'Sodas',
+    color: 'blue',
+    bgColor: 'rgba(59, 130, 246, 0.08)',
+    borderColor: 'rgba(59, 130, 246, 0.2)',
     items: [
       'Tonic Water',
       'Soda Water',
@@ -69,47 +78,43 @@ export function FreshIngredients() {
   };
 
   return (
-    <Wrap spacing={1} align="center">
-      {INGREDIENT_CATEGORIES.map((category, idx) => (
-        <>
-          {idx > 0 && <WrapItem key={`sep-${category.name}`}><Box w={2} /></WrapItem>}
-          <WrapItem key={`label-${category.name}`}>
-            <Text
-              fontSize="xs"
-              fontWeight="semibold"
-              color="gray.500"
-              mr={1}
-              textTransform="uppercase"
-              letterSpacing="wider"
-            >
-              {category.name}:
-            </Text>
-          </WrapItem>
-          {category.items.map((ingredient) => {
-            const active = isActive(ingredient);
-            return (
-              <WrapItem key={ingredient}>
-                <Button
-                  size="sm"
-                  h="28px"
-                  px={3}
-                  bg={active ? 'purple.600' : 'gray.800'}
-                  color={active ? 'white' : 'gray.400'}
-                  borderRadius="full"
-                  _hover={{
-                    bg: active ? 'purple.500' : 'gray.700',
-                  }}
-                  onClick={() => toggleIngredient(ingredient)}
-                  fontWeight={active ? 'medium' : 'normal'}
-                  fontSize="sm"
-                >
-                  {ingredient}
-                </Button>
-              </WrapItem>
-            );
-          })}
-        </>
+    <SimpleGrid columns={{ base: 1, md: 3 }} spacing={3}>
+      {INGREDIENT_CATEGORIES.map((category) => (
+        <Box
+          key={category.name}
+          bg={category.bgColor}
+          border="1px solid"
+          borderColor={category.borderColor}
+          borderRadius="xl"
+          p={3}
+        >
+          <Wrap spacing={2}>
+            {category.items.map((ingredient) => {
+              const active = isActive(ingredient);
+              return (
+                <WrapItem key={ingredient}>
+                  <Button
+                    size="xs"
+                    h="26px"
+                    px={2.5}
+                    bg={active ? `${category.color}.500` : 'whiteAlpha.100'}
+                    color={active ? 'white' : 'gray.400'}
+                    borderRadius="full"
+                    _hover={{
+                      bg: active ? `${category.color}.400` : 'whiteAlpha.200',
+                    }}
+                    onClick={() => toggleIngredient(ingredient)}
+                    fontWeight={active ? 'medium' : 'normal'}
+                    fontSize="xs"
+                  >
+                    {ingredient}
+                  </Button>
+                </WrapItem>
+              );
+            })}
+          </Wrap>
+        </Box>
       ))}
-    </Wrap>
+    </SimpleGrid>
   );
 }

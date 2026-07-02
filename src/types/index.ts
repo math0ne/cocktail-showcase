@@ -100,6 +100,7 @@ export interface DrinkFilterState {
 
 export interface AppState {
   myIngredients: string[];
+  shoppingList: string[];
   cachedCocktails: Record<string, Cocktail>;
   customCocktails: Cocktail[];
   slideShowSettings: SlideShowSettings;
@@ -109,6 +110,10 @@ export interface AppState {
   cocktailNotes: Record<string, string>;
   addIngredient: (ingredient: string) => void;
   removeIngredient: (ingredient: string) => void;
+  addToShoppingList: (ingredient: string) => void;
+  removeFromShoppingList: (ingredient: string) => void;
+  addMultipleToShoppingList: (ingredients: string[]) => void;
+  moveFromShoppingListToBar: (ingredient: string) => void;
   cacheCocktail: (cocktail: Cocktail) => void;
   addCustomCocktail: (cocktail: Cocktail) => void;
   updateCustomCocktail: (cocktail: Cocktail) => void;

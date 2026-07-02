@@ -39,6 +39,7 @@ export const useStore = create<AppState>()(
   persist(
     (set) => ({
       myIngredients: DEFAULT_INGREDIENTS,
+      shoppingList: [],
       cachedCocktails: {},
       customCocktails: [],
       slideShowSettings: {
@@ -80,6 +81,73 @@ export const useStore = create<AppState>()(
             (i) => i.toLowerCase() !== ingredient.toLowerCase()
           ),
         })),
+
+      addToShoppingList: (ingredient: string) =>
+        set((state) => {
+          const normalized = ingredient.trim();
+          // Don't add if already in shopping list or already in bar
+          if (
+            state.shoppingList
+              .map((i) => i.toLowerCase())
+              .includes(normalized.toLowerCase()) ||
+            state.myIngredients
+              .map((i) => i.toLowerCase())
+              .includes(normalized.toLowerCase())
+          ) {
+            return state;
+          }
+          return {
+            shoppingList: [...state.shoppingList, normalized].sort((a, b) =>
+              a.toLowerCase().localeCompare(b.toLowerCase())
+            ),
+          };
+        }),
+
+      removeFromShoppingList: (ingredient: string) =>
+        set((state) => ({
+          shoppingList: state.shoppingList.filter(
+            (i) => i.toLowerCase() !== ingredient.toLowerCase()
+          ),
+        })),
+
+      addMultipleToShoppingList: (ingredients: string[]) =>
+        set((state) => {
+          const newItems = ingredients.filter((ing) => {
+            const normalized = ing.trim().toLowerCase();
+            return (
+              !state.shoppingList.map((i) => i.toLowerCase()).includes(normalized) &&
+              !state.myIngredients.map((i) => i.toLowerCase()).includes(normalized)
+            );
+          });
+          if (newItems.length === 0) return state;
+          return {
+            shoppingList: [...state.shoppingList, ...newItems].sort((a, b) =>
+              a.toLowerCase().localeCompare(b.toLowerCase())
+            ),
+          };
+        }),
+
+      moveFromShoppingListToBar: (ingredient: string) =>
+        set((state) => {
+          const normalized = ingredient.trim();
+          // Remove from shopping list
+          const newShoppingList = state.shoppingList.filter(
+            (i) => i.toLowerCase() !== normalized.toLowerCase()
+          );
+          // Add to bar if not already there
+          const alreadyInBar = state.myIngredients
+            .map((i) => i.toLowerCase())
+            .includes(normalized.toLowerCase());
+          const newMyIngredients = alreadyInBar
+            ? state.myIngredients
+            : [...state.myIngredients, normalized].sort((a, b) =>
+                a.toLowerCase().localeCompare(b.toLowerCase())
+              );
+          return {
+            shoppingList: newShoppingList,
+            myIngredients: newMyIngredients,
+          };
+        }),
 
       cacheCocktail: (cocktail: Cocktail) =>
         set((state) => ({

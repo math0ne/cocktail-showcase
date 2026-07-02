@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Modal,
   ModalOverlay,
@@ -63,15 +63,33 @@ interface CocktailModalProps {
   portalContainerRef?: React.RefObject<HTMLDivElement>;
 }
 
+// Shopping cart icon
+const ShoppingCartIcon = () => (
+  <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+    <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/>
+  </svg>
+);
+
 export function CocktailModal({ match, isOpen, onClose, portalContainerRef }: CocktailModalProps) {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [addedToList, setAddedToList] = useState(false);
+
+  // Reset addedToList when modal opens with a different cocktail
+  useEffect(() => {
+    if (isOpen) {
+      setAddedToList(false);
+    }
+  }, [isOpen, match?.cocktail.id]);
+
   const triedCocktails = useStore((state) => state.triedCocktails);
   const heartedCocktails = useStore((state) => state.heartedCocktails);
   const cocktailNotes = useStore((state) => state.cocktailNotes);
   const customCocktails = useStore((state) => state.customCocktails);
+  const shoppingList = useStore((state) => state.shoppingList);
   const toggleTried = useStore((state) => state.toggleTried);
   const toggleHearted = useStore((state) => state.toggleHearted);
   const setCocktailNote = useStore((state) => state.setCocktailNote);
+  const addMultipleToShoppingList = useStore((state) => state.addMultipleToShoppingList);
 
   if (!match) return null;
 
@@ -80,6 +98,13 @@ export function CocktailModal({ match, isOpen, onClose, portalContainerRef }: Co
   const isHearted = heartedCocktails.includes(cocktail.id);
   const note = cocktailNotes[cocktail.id] || '';
   const missingLower = missingIngredients.map((m) => m.toLowerCase());
+
+  // Check how many missing ingredients are not yet in shopping list
+  const shoppingListLower = shoppingList.map((s) => s.toLowerCase());
+  const missingNotInList = missingIngredients.filter(
+    (ing) => !shoppingListLower.includes(ing.toLowerCase())
+  );
+  const allMissingInList = missingNotInList.length === 0 && missingIngredients.length > 0;
 
   // Get the latest version of the cocktail from the store if it's custom
   const currentCocktail = cocktail.id.startsWith('custom-')
@@ -133,22 +158,28 @@ export function CocktailModal({ match, isOpen, onClose, portalContainerRef }: Co
                 <List spacing={1}>
                   {currentCocktail.ingredients.map((ing, index) => {
                     const isMissing = missingLower.includes(ing.name.toLowerCase());
+                    const isInShoppingList = shoppingListLower.includes(ing.name.toLowerCase());
                     return (
                       <ListItem
                         key={`${ing.name}-${index}`}
                         display="flex"
                         alignItems="center"
-                        color={isMissing ? '#ef4444' : 'gray.100'}
+                        color={isMissing ? (isInShoppingList ? '#f59e0b' : '#ef4444') : 'gray.100'}
                         fontSize="sm"
                       >
                         <ListIcon
                           as={isMissing ? WarningIcon : CheckCircleIcon}
-                          color={isMissing ? '#ef4444' : '#10b981'}
+                          color={isMissing ? (isInShoppingList ? '#f59e0b' : '#ef4444') : '#10b981'}
                         />
-                        <Text>
+                        <Text flex={1}>
                           {ing.measure && <Text as="span" fontWeight="medium">{ing.measure} </Text>}
                           {ing.name}
                         </Text>
+                        {isMissing && isInShoppingList && (
+                          <Badge bg="#f59e0b" color="white" fontSize="2xs" borderRadius="md" ml={1}>
+                            In List
+                          </Badge>
+                        )}
                       </ListItem>
                     );
                   })}
@@ -159,10 +190,11 @@ export function CocktailModal({ match, isOpen, onClose, portalContainerRef }: Co
             {/* Right Column - Actions, Tags, Instructions & Notes */}
             <VStack spacing={4} flex={1} align="stretch">
               {/* Action buttons */}
-              <HStack spacing={2} w="100%">
+              <HStack spacing={2} w="100%" flexWrap="wrap">
                 <Button
                   size="sm"
                   flex={1}
+                  minW="80px"
                   leftIcon={<Box as="span"><CheckIcon /></Box>}
                   bg={isTried ? '#3b82f6' : 'transparent'}
                   color={isTried ? 'white' : 'gray.400'}
@@ -177,6 +209,7 @@ export function CocktailModal({ match, isOpen, onClose, portalContainerRef }: Co
                 <Button
                   size="sm"
                   flex={1}
+                  minW="80px"
                   leftIcon={<Box as="span"><HeartIcon /></Box>}
                   bg={isHearted ? '#ef4444' : 'transparent'}
                   color={isHearted ? 'white' : 'gray.400'}
@@ -188,20 +221,27 @@ export function CocktailModal({ match, isOpen, onClose, portalContainerRef }: Co
                 >
                   Favorite
                 </Button>
-                <Button
-                  size="sm"
-                  flex={1}
-                  leftIcon={<EditIcon />}
-                  bg="transparent"
-                  color="gray.400"
-                  border="1px solid"
-                  borderColor="whiteAlpha.200"
-                  _hover={{ bg: 'purple.600', color: 'white', borderColor: 'purple.600' }}
-                  onClick={() => setIsEditModalOpen(true)}
-                  borderRadius="xl"
-                >
-                  Edit
-                </Button>
+                {missingIngredients.length > 0 && (
+                  <Button
+                    size="sm"
+                    flex={1}
+                    minW="120px"
+                    leftIcon={<Box as="span"><ShoppingCartIcon /></Box>}
+                    bg={allMissingInList || addedToList ? '#10b981' : '#f59e0b'}
+                    color="white"
+                    border="1px solid"
+                    borderColor={allMissingInList || addedToList ? '#10b981' : '#f59e0b'}
+                    _hover={{ bg: allMissingInList || addedToList ? '#059669' : '#d97706' }}
+                    onClick={() => {
+                      addMultipleToShoppingList(missingIngredients);
+                      setAddedToList(true);
+                    }}
+                    borderRadius="xl"
+                    isDisabled={allMissingInList || addedToList}
+                  >
+                    {allMissingInList || addedToList ? 'In List' : `Add ${missingNotInList.length} Missing`}
+                  </Button>
+                )}
               </HStack>
 
               {/* Badges */}

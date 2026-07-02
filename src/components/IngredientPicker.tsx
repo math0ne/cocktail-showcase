@@ -24,12 +24,19 @@ export function IngredientPicker() {
   const [search, setSearch] = useState('');
   const { ingredients, loading, error } = useIngredients();
   const myIngredients = useStore((state) => state.myIngredients);
+  const shoppingList = useStore((state) => state.shoppingList);
   const addIngredient = useStore((state) => state.addIngredient);
+  const addToShoppingList = useStore((state) => state.addToShoppingList);
   const { isOpen: isAddModalOpen, onOpen: onAddModalOpen, onClose: onAddModalClose } = useDisclosure();
 
   const myIngredientsLower = useMemo(
     () => new Set(myIngredients.map((i) => i.toLowerCase())),
     [myIngredients]
+  );
+
+  const shoppingListLower = useMemo(
+    () => new Set(shoppingList.map((i) => i.toLowerCase())),
+    [shoppingList]
   );
 
   const filteredIngredients = useMemo(() => {
@@ -67,8 +74,8 @@ export function IngredientPicker() {
   }
 
   return (
-    <Box h="100%" display="flex" flexDirection="column">
-      <HStack mb={4} flexShrink={0} spacing={2}>
+    <Box h="100%" display="flex" flexDirection="column" pt={1} px={1}>
+      <HStack mb={5} flexShrink={0} spacing={2}>
         <InputGroup flex={1} h="40px">
           <InputLeftElement pointerEvents="none" h="40px">
             {loading ? (
@@ -136,13 +143,17 @@ export function IngredientPicker() {
         {filteredIngredients.length > 0 ? (
           <SimpleGrid columns={{ base: 2, sm: 3, md: 3 }} spacing={3}>
             {filteredIngredients.map((ingredient) => {
-              const isAdded = myIngredientsLower.has(ingredient.toLowerCase());
+              const ingredientLower = ingredient.toLowerCase();
+              const isAdded = myIngredientsLower.has(ingredientLower);
+              const isInShoppingList = shoppingListLower.has(ingredientLower);
               return (
                 <IngredientCard
                   key={ingredient}
                   ingredient={ingredient}
                   isAdded={isAdded}
+                  isInShoppingList={isInShoppingList}
                   onClick={() => handleSelect(ingredient)}
+                  onAddToShoppingList={() => addToShoppingList(ingredient)}
                 />
               );
             })}

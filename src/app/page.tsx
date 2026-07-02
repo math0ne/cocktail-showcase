@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Container,
@@ -12,15 +12,15 @@ import {
   ButtonGroup,
   Flex,
   Icon,
-  useDisclosure,
+  Badge,
 } from '@chakra-ui/react';
-import { AddIcon } from '@chakra-ui/icons';
 import Link from 'next/link';
 import { CocktailGrid } from '@/components/CocktailGrid';
 import { IngredientPicker } from '@/components/IngredientPicker';
 import { IngredientList } from '@/components/IngredientList';
 import { FreshIngredients } from '@/components/FreshIngredients';
-import { CreateDrinkModal } from '@/components/CreateDrinkModal';
+import { MyShoppingList } from '@/components/MyShoppingList';
+import { DataExport } from '@/components/DataExport';
 import { useStore } from '@/store/useStore';
 import { useCocktails } from '@/hooks/useCocktails';
 
@@ -40,7 +40,35 @@ export default function HomePage() {
   const [view, setView] = useState<ViewMode>('drinks');
   const myIngredients = useStore((state) => state.myIngredients);
   const { fullMatches, matches } = useCocktails();
-  const { isOpen: isCreateDrinkOpen, onOpen: onCreateDrinkOpen, onClose: onCreateDrinkClose } = useDisclosure();
+
+  // Read hash from URL and set view
+  const getViewFromHash = useCallback((): ViewMode => {
+    if (typeof window !== 'undefined') {
+      return window.location.hash === '#bar' ? 'bar' : 'drinks';
+    }
+    return 'drinks';
+  }, []);
+
+  // Initialize view from URL hash on mount
+  useEffect(() => {
+    setView(getViewFromHash());
+
+    // Listen for back/forward navigation
+    const handleHashChange = () => {
+      setView(getViewFromHash());
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, [getViewFromHash]);
+
+  // Update URL hash when view changes
+  const handleViewChange = (newView: ViewMode) => {
+    const newHash = newView === 'bar' ? '#bar' : '';
+    const newUrl = window.location.pathname + newHash;
+    window.history.pushState(null, '', newUrl);
+    setView(newView);
+  };
 
   return (
     <Box minH="100vh" bg="#0d0d0d">
@@ -117,7 +145,7 @@ export default function HomePage() {
                   bg={view === 'bar' ? 'purple.600' : 'transparent'}
                   color={view === 'bar' ? 'white' : 'gray.400'}
                   _hover={{ bg: view === 'bar' ? 'purple.500' : 'whiteAlpha.100' }}
-                  onClick={() => setView('bar')}
+                  onClick={() => handleViewChange('bar')}
                   borderRadius="lg"
                 >
                   Bar
@@ -126,7 +154,7 @@ export default function HomePage() {
                   bg={view === 'drinks' ? 'purple.600' : 'transparent'}
                   color={view === 'drinks' ? 'white' : 'gray.400'}
                   _hover={{ bg: view === 'drinks' ? 'purple.500' : 'whiteAlpha.100' }}
-                  onClick={() => setView('drinks')}
+                  onClick={() => handleViewChange('drinks')}
                   borderRadius="lg"
                 >
                   Drinks
@@ -203,22 +231,16 @@ export default function HomePage() {
                 border="1px solid"
                 borderColor="whiteAlpha.100"
               >
-                <Flex justify="space-between" align="center" mb={4}>
+                <HStack mb={4}>
                   <Heading size="md" color="gray.100">
                     Your Bar Stock
                   </Heading>
-                  <Button
-                    size="sm"
-                    leftIcon={<AddIcon boxSize={3} />}
-                    bg="purple.600"
-                    color="white"
-                    _hover={{ bg: 'purple.500' }}
-                    borderRadius="lg"
-                    onClick={onCreateDrinkOpen}
-                  >
-                    Create Drink
-                  </Button>
-                </Flex>
+                  {myIngredients.length > 0 && (
+                    <Badge bg="purple.500" color="white" borderRadius="full" px={3} py={1}>
+                      {myIngredients.length}
+                    </Badge>
+                  )}
+                </HStack>
                 <IngredientList />
               </Box>
 
@@ -235,24 +257,45 @@ export default function HomePage() {
                   position="absolute"
                   inset={0}
                   p={6}
+                  pt={5}
                   display="flex"
                   flexDirection="column"
-                  overflow="hidden"
                 >
-                  <Heading size="md" mb={4} color="gray.100" flexShrink={0}>
+                  <Heading size="md" mb={3} color="gray.100" flexShrink={0}>
                     Add Ingredients
                   </Heading>
-                  <Box flex={1} minH={0} overflow="hidden">
+                  <Box flex={1} minH={0}>
                     <IngredientPicker />
                   </Box>
                 </Box>
               </Box>
             </Box>
+
+            {/* Shopping List */}
+            <Box
+              bg="#121214"
+              p={6}
+              borderRadius="2xl"
+              border="1px solid"
+              borderColor="whiteAlpha.100"
+            >
+              <MyShoppingList />
+            </Box>
+
+            {/* Data Export/Import */}
+            <Box
+              bg="#121214"
+              p={6}
+              borderRadius="2xl"
+              border="1px solid"
+              borderColor="whiteAlpha.100"
+            >
+              <DataExport />
+            </Box>
           </VStack>
         </Container>
       )}
 
-      <CreateDrinkModal isOpen={isCreateDrinkOpen} onClose={onCreateDrinkClose} />
     </Box>
   );
 }
