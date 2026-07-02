@@ -16,6 +16,9 @@ import {
   Image,
   Button,
   Divider,
+  Switch,
+  FormControl,
+  FormLabel,
 } from '@chakra-ui/react';
 import {
   ChevronLeftIcon,
@@ -63,12 +66,13 @@ export function Slideshow({ onClose }: SlideshowProps) {
   const { fullMatches, loading } = useCocktails();
   const slideShowSettings = useStore((state) => state.slideShowSettings);
   const setSlideShowInterval = useStore((state) => state.setSlideShowInterval);
+  const setRetroFilterEnabled = useStore((state) => state.setRetroFilterEnabled);
   const triedCocktails = useStore((state) => state.triedCocktails);
   const heartedCocktails = useStore((state) => state.heartedCocktails);
   const toggleTried = useStore((state) => state.toggleTried);
   const toggleHearted = useStore((state) => state.toggleHearted);
 
-  const { interval } = slideShowSettings;
+  const { interval, retroFilterEnabled } = slideShowSettings;
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState(0);
@@ -420,7 +424,7 @@ export function Slideshow({ onClose }: SlideshowProps) {
             </Button>
           </HStack>
 
-          {/* Timer Control */}
+          {/* Settings */}
           <Box
             bg="#121214"
             p={4}
@@ -428,30 +432,50 @@ export function Slideshow({ onClose }: SlideshowProps) {
             border="1px solid"
             borderColor="whiteAlpha.100"
           >
-            <HStack justify="space-between" mb={3}>
-              <Text color="gray.400" fontSize="sm">Auto-advance: {interval}s</Text>
-              <Button
-                size="xs"
-                variant="ghost"
-                color={isPaused ? 'orange.400' : 'gray.400'}
-                _hover={{ bg: 'whiteAlpha.100' }}
-                onClick={() => setIsPaused(p => !p)}
-              >
-                {isPaused ? 'Paused' : 'Pause'}
-              </Button>
-            </HStack>
-            <Slider
-              value={interval}
-              min={5}
-              max={30}
-              step={1}
-              onChange={(val) => { setSlideShowInterval(val); resetTimer(); }}
-            >
-              <SliderTrack bg="whiteAlpha.200" h="6px" borderRadius="full">
-                <SliderFilledTrack bg="purple.500" />
-              </SliderTrack>
-              <SliderThumb boxSize={4} />
-            </Slider>
+            <VStack spacing={4} align="stretch">
+              {/* Timer */}
+              <Box>
+                <HStack justify="space-between" mb={3}>
+                  <Text color="gray.400" fontSize="sm">Auto-advance: {interval}s</Text>
+                  <Button
+                    size="xs"
+                    variant="ghost"
+                    color={isPaused ? 'orange.400' : 'gray.400'}
+                    _hover={{ bg: 'whiteAlpha.100' }}
+                    onClick={() => setIsPaused(p => !p)}
+                  >
+                    {isPaused ? 'Paused' : 'Pause'}
+                  </Button>
+                </HStack>
+                <Slider
+                  value={interval}
+                  min={5}
+                  max={30}
+                  step={1}
+                  onChange={(val) => { setSlideShowInterval(val); resetTimer(); }}
+                >
+                  <SliderTrack bg="whiteAlpha.200" h="6px" borderRadius="full">
+                    <SliderFilledTrack bg="purple.500" />
+                  </SliderTrack>
+                  <SliderThumb boxSize={4} />
+                </Slider>
+              </Box>
+
+              <Divider borderColor="whiteAlpha.100" />
+
+              {/* Retro Filter Toggle */}
+              <FormControl display="flex" alignItems="center" justifyContent="space-between">
+                <FormLabel color="gray.400" fontSize="sm" mb={0}>
+                  Retro Filter
+                </FormLabel>
+                <Switch
+                  isChecked={retroFilterEnabled}
+                  onChange={(e) => setRetroFilterEnabled(e.target.checked)}
+                  colorScheme="purple"
+                  size="md"
+                />
+              </FormControl>
+            </VStack>
           </Box>
         </VStack>
       </Flex>
@@ -488,7 +512,27 @@ export function Slideshow({ onClose }: SlideshowProps) {
               h="100%"
               w="100%"
               objectFit="cover"
+              filter={retroFilterEnabled ? 'saturate(0.6) contrast(1.2) brightness(1.05) sepia(0.35)' : 'none'}
             />
+            {/* Retro Vignette Overlay */}
+            {retroFilterEnabled && (
+              <Box
+                position="absolute"
+                inset={0}
+                pointerEvents="none"
+                sx={{
+                  background: `
+                    radial-gradient(ellipse at center,
+                      transparent 0%,
+                      transparent 40%,
+                      rgba(0,0,0,0.3) 70%,
+                      rgba(0,0,0,0.7) 100%
+                    ),
+                    linear-gradient(0deg, rgba(180,140,80,0.12) 0%, rgba(180,140,80,0.12) 100%)
+                  `,
+                }}
+              />
+            )}
           </MotionBox>
         </AnimatePresence>
 

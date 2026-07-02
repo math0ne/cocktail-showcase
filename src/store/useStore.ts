@@ -43,10 +43,10 @@ export const useStore = create<AppState>()(
       cachedCocktails: {},
       customCocktails: [],
       slideShowSettings: {
-        interval: 8,
+        interval: 15,
         kenBurnsEnabled: true,
         filmGrainEnabled: true,
-        retroFilterEnabled: false,
+        retroFilterEnabled: true,
         transitionSpeed: 'normal' as const,
       },
       drinkFilters: {
