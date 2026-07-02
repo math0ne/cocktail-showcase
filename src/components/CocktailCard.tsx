@@ -64,23 +64,38 @@ export function CocktailCard({ match, onClick, showReadyHighlight = true }: Cock
           bgGradient="linear(to-t, #121214, transparent)"
           pointerEvents="none"
         />
-        {/* Status badge - top right */}
-        <Badge
+        {/* Status badges - top right */}
+        <VStack
           position="absolute"
           top={2}
           right={2}
-          bg={isFullMatch ? '#10b981' : '#f59e0b'}
-          color="white"
-          fontSize="xs"
-          px={2.5}
-          py={1}
-          borderRadius="md"
-          fontWeight="semibold"
+          spacing={1}
+          align="flex-end"
         >
-          {isFullMatch
-            ? 'Ready'
-            : `Missing ${missingIngredients.length}`}
-        </Badge>
+          <Badge
+            bg={isFullMatch ? '#10b981' : '#f59e0b'}
+            color="white"
+            fontSize="xs"
+            px={2.5}
+            py={1}
+            borderRadius="md"
+            fontWeight="semibold"
+          >
+            {isFullMatch
+              ? 'Ready'
+              : `Missing ${missingIngredients.length}`}
+          </Badge>
+          {isTried && (
+            <Badge bg="#3b82f6" color="white" fontSize="xs" borderRadius="md" fontWeight="semibold" px={2} py={0.5}>
+              Tried
+            </Badge>
+          )}
+          {isHearted && (
+            <Badge bg="#ef4444" color="white" fontSize="xs" borderRadius="md" fontWeight="semibold" px={2} py={0.5}>
+              Liked
+            </Badge>
+          )}
+        </VStack>
       </Box>
 
       <VStack p={4} align="stretch" spacing={2}>
@@ -89,20 +104,6 @@ export function CocktailCard({ match, onClick, showReadyHighlight = true }: Cock
         </Text>
 
         <Wrap spacing={1.5} align="center">
-          {isTried && (
-            <WrapItem>
-              <Badge bg="#10b981" color="white" fontSize="xs" borderRadius="md" fontWeight="semibold" px={2} py={0.5}>
-                Tried
-              </Badge>
-            </WrapItem>
-          )}
-          {isHearted && (
-            <WrapItem>
-              <Badge bg="#ef4444" color="white" fontSize="xs" borderRadius="md" fontWeight="semibold" px={2} py={0.5}>
-                Liked
-              </Badge>
-            </WrapItem>
-          )}
           <WrapItem>
             <Badge bg="#8b5cf6" color="white" fontSize="xs" borderRadius="md" fontWeight="semibold" px={2} py={0.5}>
               {cocktail.category}

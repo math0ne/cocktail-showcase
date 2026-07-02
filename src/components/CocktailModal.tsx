@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import {
   Modal,
   ModalOverlay,
@@ -21,10 +22,12 @@ import {
   WrapItem,
   Button,
   Textarea,
+  IconButton,
 } from '@chakra-ui/react';
-import { CheckCircleIcon, WarningIcon } from '@chakra-ui/icons';
+import { CheckCircleIcon, WarningIcon, EditIcon } from '@chakra-ui/icons';
 import { useStore } from '@/store/useStore';
 import { CocktailImage } from './CocktailImage';
+import { CreateDrinkModal } from './CreateDrinkModal';
 import type { CocktailMatch } from '@/types';
 
 // Checkmark icon component (outline only)
@@ -61,9 +64,11 @@ interface CocktailModalProps {
 }
 
 export function CocktailModal({ match, isOpen, onClose, portalContainerRef }: CocktailModalProps) {
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const triedCocktails = useStore((state) => state.triedCocktails);
   const heartedCocktails = useStore((state) => state.heartedCocktails);
   const cocktailNotes = useStore((state) => state.cocktailNotes);
+  const customCocktails = useStore((state) => state.customCocktails);
   const toggleTried = useStore((state) => state.toggleTried);
   const toggleHearted = useStore((state) => state.toggleHearted);
   const setCocktailNote = useStore((state) => state.setCocktailNote);
@@ -76,6 +81,11 @@ export function CocktailModal({ match, isOpen, onClose, portalContainerRef }: Co
   const note = cocktailNotes[cocktail.id] || '';
   const missingLower = missingIngredients.map((m) => m.toLowerCase());
 
+  // Get the latest version of the cocktail from the store if it's custom
+  const currentCocktail = cocktail.id.startsWith('custom-')
+    ? customCocktails.find((c) => c.id === cocktail.id) || cocktail
+    : cocktail;
+
   return (
     <Modal
       isOpen={isOpen}
@@ -86,18 +96,30 @@ export function CocktailModal({ match, isOpen, onClose, portalContainerRef }: Co
     >
       <ModalOverlay bg="blackAlpha.800" backdropFilter="blur(8px)" />
       <ModalContent bg="#0d0d0d" mx={4} borderRadius="2xl" border="1px solid" borderColor="whiteAlpha.100">
-        <ModalHeader pr={12} color="gray.100">
-          {cocktail.name}
+        <ModalHeader pr={20} color="gray.100">
+          {currentCocktail.name}
         </ModalHeader>
-        <ModalCloseButton color="gray.400" />
+        <IconButton
+          aria-label="Edit drink"
+          icon={<EditIcon />}
+          position="absolute"
+          top={2}
+          right={10}
+          size="sm"
+          variant="ghost"
+          color="gray.400"
+          _hover={{ color: 'purple.400', bg: 'whiteAlpha.100' }}
+          onClick={() => setIsEditModalOpen(true)}
+        />
+        <ModalCloseButton color="gray.400" top={2} />
         <ModalBody pb={6}>
           <Flex gap={6} direction={{ base: 'column', md: 'row' }}>
             {/* Left Column - Image & Ingredients */}
             <VStack spacing={4} flex="0 0 auto" w={{ base: '100%', md: '240px' }} align="stretch">
               <CocktailImage
-                cocktailId={cocktail.id}
-                thumbnailUrl={cocktail.thumbnail}
-                name={cocktail.name}
+                cocktailId={currentCocktail.id}
+                thumbnailUrl={currentCocktail.thumbnail}
+                name={currentCocktail.name}
                 aspectRatio="1"
                 borderRadius="xl"
                 fallbackSize="6xl"
@@ -109,7 +131,7 @@ export function CocktailModal({ match, isOpen, onClose, portalContainerRef }: Co
                   Ingredients
                 </Text>
                 <List spacing={1}>
-                  {cocktail.ingredients.map((ing, index) => {
+                  {currentCocktail.ingredients.map((ing, index) => {
                     const isMissing = missingLower.includes(ing.name.toLowerCase());
                     return (
                       <ListItem
@@ -136,21 +158,21 @@ export function CocktailModal({ match, isOpen, onClose, portalContainerRef }: Co
 
             {/* Right Column - Actions, Tags, Instructions & Notes */}
             <VStack spacing={4} flex={1} align="stretch">
-              {/* Tried / Hearted buttons */}
+              {/* Action buttons */}
               <HStack spacing={2} w="100%">
                 <Button
                   size="sm"
                   flex={1}
                   leftIcon={<Box as="span"><CheckIcon /></Box>}
-                  bg={isTried ? '#10b981' : 'transparent'}
+                  bg={isTried ? '#3b82f6' : 'transparent'}
                   color={isTried ? 'white' : 'gray.400'}
                   border="1px solid"
-                  borderColor={isTried ? '#10b981' : 'whiteAlpha.200'}
-                  _hover={{ bg: isTried ? '#059669' : 'whiteAlpha.100' }}
+                  borderColor={isTried ? '#3b82f6' : 'whiteAlpha.200'}
+                  _hover={{ bg: isTried ? '#2563eb' : 'whiteAlpha.100' }}
                   onClick={() => toggleTried(cocktail.id)}
                   borderRadius="xl"
                 >
-                  {isTried ? 'Tried' : 'Tried'}
+                  Tried
                 </Button>
                 <Button
                   size="sm"
@@ -164,7 +186,21 @@ export function CocktailModal({ match, isOpen, onClose, portalContainerRef }: Co
                   onClick={() => toggleHearted(cocktail.id)}
                   borderRadius="xl"
                 >
-                  {isHearted ? 'Favorite' : 'Favorite'}
+                  Favorite
+                </Button>
+                <Button
+                  size="sm"
+                  flex={1}
+                  leftIcon={<EditIcon />}
+                  bg="transparent"
+                  color="gray.400"
+                  border="1px solid"
+                  borderColor="whiteAlpha.200"
+                  _hover={{ bg: 'purple.600', color: 'white', borderColor: 'purple.600' }}
+                  onClick={() => setIsEditModalOpen(true)}
+                  borderRadius="xl"
+                >
+                  Edit
                 </Button>
               </HStack>
 
@@ -185,15 +221,15 @@ export function CocktailModal({ match, isOpen, onClose, portalContainerRef }: Co
                 </WrapItem>
                 <WrapItem>
                   <Badge bg="#8b5cf6" color="white" fontSize="sm" borderRadius="md" px={3} py={1} fontWeight="semibold">
-                    {cocktail.category}
+                    {currentCocktail.category}
                   </Badge>
                 </WrapItem>
                 <WrapItem>
                   <Badge bg="#6366f1" color="white" fontSize="sm" borderRadius="md" px={3} py={1} fontWeight="semibold">
-                    {cocktail.glass}
+                    {currentCocktail.glass}
                   </Badge>
                 </WrapItem>
-                {cocktail.tags.map((tag) => (
+                {currentCocktail.tags.map((tag) => (
                   <WrapItem key={tag}>
                     <Badge bg="#0ea5e9" color="white" fontSize="sm" borderRadius="md" px={3} py={1} fontWeight="semibold">
                       {tag}
@@ -215,7 +251,7 @@ export function CocktailModal({ match, isOpen, onClose, portalContainerRef }: Co
                   borderRadius="xl"
                 >
                   <Text color="gray.300" whiteSpace="pre-wrap" fontSize="sm">
-                    {cocktail.instructions}
+                    {currentCocktail.instructions}
                   </Text>
                 </Box>
               </Box>
@@ -249,6 +285,13 @@ export function CocktailModal({ match, isOpen, onClose, portalContainerRef }: Co
           </Flex>
         </ModalBody>
       </ModalContent>
+
+      {/* Edit Modal */}
+      <CreateDrinkModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        editCocktail={currentCocktail}
+      />
     </Modal>
   );
 }

@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import type { AppState, Cocktail } from '@/types';
+import type { AppState, Cocktail, DrinkViewMode, DrinkSortOption } from '@/types';
 
 // Typical home bar ingredients for testing
 const DEFAULT_INGREDIENTS = [
@@ -47,6 +47,11 @@ export const useStore = create<AppState>()(
         filmGrainEnabled: true,
         retroFilterEnabled: false,
         transitionSpeed: 'normal' as const,
+      },
+      drinkFilters: {
+        viewMode: 'ready' as DrinkViewMode,
+        sortBy: 'match' as DrinkSortOption,
+        search: '',
       },
       triedCocktails: [],
       heartedCocktails: [],
@@ -138,6 +143,30 @@ export const useStore = create<AppState>()(
           slideShowSettings: {
             ...state.slideShowSettings,
             transitionSpeed: speed,
+          },
+        })),
+
+      setDrinkViewMode: (viewMode: DrinkViewMode) =>
+        set((state) => ({
+          drinkFilters: {
+            ...state.drinkFilters,
+            viewMode,
+          },
+        })),
+
+      setDrinkSortBy: (sortBy: DrinkSortOption) =>
+        set((state) => ({
+          drinkFilters: {
+            ...state.drinkFilters,
+            sortBy,
+          },
+        })),
+
+      setDrinkSearch: (search: string) =>
+        set((state) => ({
+          drinkFilters: {
+            ...state.drinkFilters,
+            search,
           },
         })),
 

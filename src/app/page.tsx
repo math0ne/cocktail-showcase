@@ -157,8 +157,21 @@ export default function HomePage() {
 
       {/* Main Content */}
       {view === 'drinks' ? (
-        <Box px={{ base: 4, md: 6 }} py={6}>
-          <CocktailGrid />
+        <Box position="relative">
+          <Box px={{ base: 4, md: 6 }} py={6} pb={24}>
+            <CocktailGrid />
+          </Box>
+          {/* Bottom fade overlay */}
+          <Box
+            position="fixed"
+            bottom={0}
+            left={0}
+            right={0}
+            h="120px"
+            bgGradient="linear(to-t, #0d0d0d 0%, transparent 100%)"
+            pointerEvents="none"
+            zIndex={10}
+          />
         </Box>
       ) : (
         <Container maxW="container.xl" py={6}>

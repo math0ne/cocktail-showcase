@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   Modal,
   ModalOverlay,
@@ -22,8 +22,13 @@ import {
   FormLabel,
   Image,
   Center,
+  Wrap,
+  WrapItem,
+  Tag,
+  TagLabel,
+  TagCloseButton,
 } from '@chakra-ui/react';
-import { AddIcon, DeleteIcon } from '@chakra-ui/icons';
+import { AddIcon, DeleteIcon, SmallAddIcon } from '@chakra-ui/icons';
 import { useStore } from '@/store/useStore';
 import { saveImage, processImageFile, getCocktailImageKey } from '@/lib/imageStore';
 import type { Ingredient, Cocktail } from '@/types';
@@ -63,11 +68,18 @@ const GLASS_TYPES = [
 interface CreateDrinkModalProps {
   isOpen: boolean;
   onClose: () => void;
+  editCocktail?: Cocktail | null;
 }
 
-export function CreateDrinkModal({ isOpen, onClose }: CreateDrinkModalProps) {
+export function CreateDrinkModal({ isOpen, onClose, editCocktail }: CreateDrinkModalProps) {
   const addCustomCocktail = useStore((state) => state.addCustomCocktail);
+  const updateCustomCocktail = useStore((state) => state.updateCustomCocktail);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const isEditMode = !!editCocktail;
+  const isCustomDrink = editCocktail?.id.startsWith('custom-') ?? false;
+  // When editing a built-in drink, we create a custom copy
+  const isCloneMode = isEditMode && !isCustomDrink;
 
   const [name, setName] = useState('');
   const [category, setCategory] = useState('Cocktail');
@@ -78,7 +90,41 @@ export function CreateDrinkModal({ isOpen, onClose }: CreateDrinkModalProps) {
   ]);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [tags, setTags] = useState<string[]>([]);
+  const [tagInput, setTagInput] = useState('');
   const [saving, setSaving] = useState(false);
+
+  // Populate form when editing
+  React.useEffect(() => {
+    if (editCocktail && isOpen) {
+      setName(editCocktail.name);
+      setCategory(editCocktail.category);
+      setGlass(editCocktail.glass);
+      setInstructions(editCocktail.instructions);
+      setIngredients(editCocktail.ingredients.length > 0 ? editCocktail.ingredients : [{ name: '', measure: '' }]);
+      // Filter out 'Custom' tag as it's auto-added
+      setTags(editCocktail.tags.filter(t => t !== 'Custom'));
+    }
+  }, [editCocktail, isOpen]);
+
+  const handleAddTag = () => {
+    const trimmed = tagInput.trim();
+    if (trimmed && !tags.includes(trimmed)) {
+      setTags([...tags, trimmed]);
+      setTagInput('');
+    }
+  };
+
+  const handleRemoveTag = (tagToRemove: string) => {
+    setTags(tags.filter((t) => t !== tagToRemove));
+  };
+
+  const handleTagKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleAddTag();
+    }
+  };
 
   const handleAddIngredient = () => {
     setIngredients([...ingredients, { name: '', measure: '' }]);
@@ -131,7 +177,8 @@ export function CreateDrinkModal({ isOpen, onClose }: CreateDrinkModalProps) {
     setSaving(true);
 
     try {
-      const cocktailId = `custom-${Date.now()}`;
+      // For clone mode (editing built-in drinks), always create a new custom drink
+      const cocktailId = (isEditMode && isCustomDrink) ? editCocktail!.id : `custom-${Date.now()}`;
 
       // Save image to IndexedDB if provided
       if (imageFile) {
@@ -156,11 +203,17 @@ export function CreateDrinkModal({ isOpen, onClose }: CreateDrinkModalProps) {
           name: ing.name.trim(),
           measure: ing.measure.trim(),
         })),
-        tags: ['Custom'],
+        tags: ['Custom', ...tags],
         iba: null,
       };
 
-      addCustomCocktail(cocktail);
+      if (isEditMode && isCustomDrink) {
+        // Update existing custom drink
+        updateCustomCocktail(cocktail);
+      } else {
+        // Create new custom drink (either new or cloned from built-in)
+        addCustomCocktail(cocktail);
+      }
       handleClose();
     } catch (err) {
       console.error('Failed to save cocktail:', err);
@@ -175,6 +228,8 @@ export function CreateDrinkModal({ isOpen, onClose }: CreateDrinkModalProps) {
     setGlass('Cocktail glass');
     setInstructions('');
     setIngredients([{ name: '', measure: '' }]);
+    setTags([]);
+    setTagInput('');
     handleRemoveImage();
     onClose();
   };
@@ -192,7 +247,9 @@ export function CreateDrinkModal({ isOpen, onClose }: CreateDrinkModalProps) {
         border="1px solid"
         borderColor="whiteAlpha.100"
       >
-        <ModalHeader color="gray.100">Create Custom Drink</ModalHeader>
+        <ModalHeader color="gray.100">
+          {isCloneMode ? 'Create Custom Version' : isEditMode ? 'Edit Drink' : 'Create Custom Drink'}
+        </ModalHeader>
         <ModalCloseButton color="gray.400" />
         <ModalBody>
           <VStack spacing={4} align="stretch">
@@ -291,6 +348,12 @@ export function CreateDrinkModal({ isOpen, onClose }: CreateDrinkModalProps) {
                   _focus={{
                     boxShadow: '0 0 0 1px var(--chakra-colors-purple-500)',
                   }}
+                  sx={{
+                    '& option': {
+                      bg: '#1a1a1a',
+                      color: 'white',
+                    },
+                  }}
                 >
                   {CATEGORIES.map((cat) => (
                     <option key={cat} value={cat}>
@@ -313,6 +376,12 @@ export function CreateDrinkModal({ isOpen, onClose }: CreateDrinkModalProps) {
                   color="gray.100"
                   _focus={{
                     boxShadow: '0 0 0 1px var(--chakra-colors-purple-500)',
+                  }}
+                  sx={{
+                    '& option': {
+                      bg: '#1a1a1a',
+                      color: 'white',
+                    },
                   }}
                 >
                   {GLASS_TYPES.map((g) => (
@@ -416,6 +485,60 @@ export function CreateDrinkModal({ isOpen, onClose }: CreateDrinkModalProps) {
                 ))}
               </VStack>
             </Box>
+
+            {/* Tags */}
+            <Box>
+              <Text color="gray.300" fontSize="sm" fontWeight="medium" mb={2}>
+                Tags
+              </Text>
+              <HStack spacing={2} mb={2}>
+                <Input
+                  flex={1}
+                  value={tagInput}
+                  onChange={(e) => setTagInput(e.target.value)}
+                  onKeyDown={handleTagKeyDown}
+                  placeholder="Add a tag..."
+                  bg="gray.800"
+                  border="none"
+                  borderRadius="xl"
+                  color="gray.100"
+                  size="sm"
+                  _placeholder={{ color: 'gray.500' }}
+                  _focus={{
+                    bg: 'gray.800',
+                    boxShadow: '0 0 0 1px var(--chakra-colors-purple-500)',
+                  }}
+                />
+                <IconButton
+                  aria-label="Add tag"
+                  icon={<SmallAddIcon />}
+                  size="sm"
+                  bg="purple.600"
+                  color="white"
+                  _hover={{ bg: 'purple.500' }}
+                  borderRadius="lg"
+                  onClick={handleAddTag}
+                  isDisabled={!tagInput.trim()}
+                />
+              </HStack>
+              {tags.length > 0 && (
+                <Wrap spacing={2}>
+                  {tags.map((tag) => (
+                    <WrapItem key={tag}>
+                      <Tag
+                        size="md"
+                        bg="purple.500"
+                        color="white"
+                        borderRadius="full"
+                      >
+                        <TagLabel>{tag}</TagLabel>
+                        <TagCloseButton onClick={() => handleRemoveTag(tag)} />
+                      </Tag>
+                    </WrapItem>
+                  ))}
+                </Wrap>
+              )}
+            </Box>
           </VStack>
         </ModalBody>
 
@@ -439,7 +562,7 @@ export function CreateDrinkModal({ isOpen, onClose }: CreateDrinkModalProps) {
             isLoading={saving}
             borderRadius="xl"
           >
-            Create Drink
+            {isCloneMode ? 'Create Custom Version' : isEditMode ? 'Save Changes' : 'Create Drink'}
           </Button>
         </ModalFooter>
       </ModalContent>

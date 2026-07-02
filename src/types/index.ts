@@ -89,11 +89,21 @@ export interface SlideShowSettings {
   transitionSpeed: 'slow' | 'normal' | 'fast';
 }
 
+export type DrinkSortOption = 'match' | 'name' | 'category' | 'glass' | 'ingredients' | 'liked' | 'tried';
+export type DrinkViewMode = 'ready' | 'matches' | 'all' | 'tried' | 'liked';
+
+export interface DrinkFilterState {
+  viewMode: DrinkViewMode;
+  sortBy: DrinkSortOption;
+  search: string;
+}
+
 export interface AppState {
   myIngredients: string[];
   cachedCocktails: Record<string, Cocktail>;
   customCocktails: Cocktail[];
   slideShowSettings: SlideShowSettings;
+  drinkFilters: DrinkFilterState;
   triedCocktails: string[];
   heartedCocktails: string[];
   cocktailNotes: Record<string, string>;
@@ -108,6 +118,9 @@ export interface AppState {
   setFilmGrainEnabled: (enabled: boolean) => void;
   setRetroFilterEnabled: (enabled: boolean) => void;
   setTransitionSpeed: (speed: 'slow' | 'normal' | 'fast') => void;
+  setDrinkViewMode: (viewMode: DrinkViewMode) => void;
+  setDrinkSortBy: (sortBy: DrinkSortOption) => void;
+  setDrinkSearch: (search: string) => void;
   clearIngredients: () => void;
   loadDefaultIngredients: () => void;
   setIngredients: (ingredients: string[]) => void;

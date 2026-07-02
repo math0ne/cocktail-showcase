@@ -1138,10 +1138,16 @@ export function Slideshow() {
                 color="white"
                 _hover={{ borderColor: 'whiteAlpha.400' }}
                 _focus={{ borderColor: 'teal.500', boxShadow: '0 0 0 1px var(--chakra-colors-teal-500)' }}
+                sx={{
+                  '& option': {
+                    bg: '#1a1a1a',
+                    color: 'white',
+                  },
+                }}
               >
-                <option value="slow" style={{ background: '#1a1a1a' }}>Slow</option>
-                <option value="normal" style={{ background: '#1a1a1a' }}>Normal</option>
-                <option value="fast" style={{ background: '#1a1a1a' }}>Fast</option>
+                <option value="slow">Slow</option>
+                <option value="normal">Normal</option>
+                <option value="fast">Fast</option>
               </Select>
             </FormControl>
 

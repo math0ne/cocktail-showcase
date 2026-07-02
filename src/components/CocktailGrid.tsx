@@ -24,19 +24,22 @@ import { CocktailCard } from './CocktailCard';
 import { CocktailModal } from './CocktailModal';
 import { useCocktails } from '@/hooks/useCocktails';
 import { useStore } from '@/store/useStore';
-import type { CocktailMatch } from '@/types';
+import type { CocktailMatch, DrinkSortOption, DrinkViewMode } from '@/types';
 import Link from 'next/link';
 import { fuzzyMatch } from '@/lib/fuzzyMatch';
 
-type SortOption = 'match' | 'name' | 'category' | 'glass' | 'ingredients' | 'liked' | 'tried';
-type ViewMode = 'ready' | 'matches' | 'all' | 'tried' | 'liked';
-
 export function CocktailGrid() {
-  const [sortBy, setSortBy] = useState<SortOption>('match');
-  const [viewMode, setViewMode] = useState<ViewMode>('ready');
-  const [search, setSearch] = useState('');
   const [selectedMatch, setSelectedMatch] = useState<CocktailMatch | null>(null);
   const { isOpen, onOpen, onClose } = useDisclosure();
+
+  // Filter state from store
+  const viewMode = useStore((state) => state.drinkFilters.viewMode);
+  const sortBy = useStore((state) => state.drinkFilters.sortBy);
+  const search = useStore((state) => state.drinkFilters.search);
+  const setViewMode = useStore((state) => state.setDrinkViewMode);
+  const setSortBy = useStore((state) => state.setDrinkSortBy);
+  const setSearch = useStore((state) => state.setDrinkSearch);
+
   const { matches, totalCount, matchedCount, loading, error } = useCocktails(viewMode === 'all' || viewMode === 'tried' || viewMode === 'liked');
   const myIngredients = useStore((state) => state.myIngredients);
   const triedCocktails = useStore((state) => state.triedCocktails);
@@ -291,17 +294,10 @@ export function CocktailGrid() {
               />
             </InputGroup>
 
-            {/* Results count */}
-            {search && (
-              <Text fontSize="sm" fontWeight="medium" color="gray.400" whiteSpace="nowrap" display={{ base: 'none', sm: 'block' }}>
-                Found {filteredAndSorted.length}
-              </Text>
-            )}
-
-            {/* Sort - Right */}
+            {/* Sort */}
             <Select
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as SortOption)}
+              onChange={(e) => setSortBy(e.target.value as DrinkSortOption)}
               w={{ base: '130px', md: '150px' }}
               h="40px"
               bg="gray.800"
@@ -314,6 +310,12 @@ export function CocktailGrid() {
               _focus={{
                 boxShadow: '0 0 0 1px var(--chakra-colors-purple-500)',
               }}
+              sx={{
+                '& option': {
+                  bg: '#1a1a1a',
+                  color: 'white',
+                },
+              }}
             >
               <option value="match">Best Match</option>
               <option value="name">Name (A-Z)</option>
@@ -323,6 +325,13 @@ export function CocktailGrid() {
               <option value="glass">Glass Type</option>
               <option value="ingredients">Ingredients</option>
             </Select>
+
+            {/* Results count - after sort */}
+            {search && (
+              <Text fontSize="sm" fontWeight="medium" color="gray.400" whiteSpace="nowrap" display={{ base: 'none', sm: 'block' }}>
+                Found {filteredAndSorted.length}
+              </Text>
+            )}
           </Flex>
         </Flex>
       </VStack>
