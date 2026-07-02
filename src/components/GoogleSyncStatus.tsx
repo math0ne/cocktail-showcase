@@ -70,9 +70,22 @@ export function GoogleSyncStatus() {
 
   if (isLoading) {
     return (
-      <Box>
-        <Spinner size="sm" color="gray.500" />
-      </Box>
+      <Button
+        size="sm"
+        h="32px"
+        px={3}
+        bg="orange.900"
+        color="orange.300"
+        _hover={{ bg: 'orange.800' }}
+        borderRadius="lg"
+        fontWeight="medium"
+        cursor="default"
+      >
+        <HStack spacing={2}>
+          <Box w="6px" h="6px" borderRadius="full" bg="orange.400" />
+          <Text display={{ base: 'none', sm: 'block' }}>Pending</Text>
+        </HStack>
+      </Button>
     );
   }
 
