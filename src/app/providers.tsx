@@ -11,114 +11,149 @@ const config: ThemeConfig = {
 const theme = extendTheme({
   config,
   styles: {
-    global: (props: { colorMode: string }) => ({
+    global: {
       body: {
-        bg: props.colorMode === 'dark' ? 'gray.900' : 'gray.50',
-        color: props.colorMode === 'dark' ? 'gray.100' : 'gray.800',
+        bg: '#0d0d0d',
+        color: 'gray.100',
       },
-    }),
+    },
   },
   colors: {
-    // Softer gray palette for less contrast
-    gray: {
-      50: '#f7f7f8',
-      100: '#e8e8ea',
-      200: '#d1d1d6',
-      300: '#a9a9b2',
-      400: '#7c7c87',
-      500: '#5c5c66',
-      600: '#46464f',
-      700: '#33333a',
-      800: '#242429',
-      900: '#18181b',
-      950: '#0f0f11',
-    },
+    // Revolut purple palette
     brand: {
-      50: '#e6fffa',
-      100: '#b2f5ea',
-      200: '#81e6d9',
-      300: '#4fd1c5',
-      400: '#38b2ac',
-      500: '#319795',
-      600: '#2c7a7b',
-      700: '#285e61',
-      800: '#234e52',
-      900: '#1d4044',
+      50: '#f5f3ff',
+      100: '#ede9fe',
+      200: '#ddd6fe',
+      300: '#c4b5fd',
+      400: '#a78bfa',
+      500: '#8b5cf6',
+      600: '#7c3aed',
+      700: '#6d28d9',
+      800: '#5b21b6',
+      900: '#4c1d95',
+    },
+    purple: {
+      50: '#f5f3ff',
+      100: '#ede9fe',
+      200: '#ddd6fe',
+      300: '#c4b5fd',
+      400: '#a78bfa',
+      500: '#8b5cf6',
+      600: '#7c3aed',
+      700: '#6d28d9',
+      800: '#5b21b6',
+      900: '#4c1d95',
+    },
+    // Deeper grays for dark theme
+    gray: {
+      50: '#fafafa',
+      100: '#f4f4f5',
+      200: '#e4e4e7',
+      300: '#d4d4d8',
+      400: '#a1a1aa',
+      500: '#71717a',
+      600: '#52525b',
+      700: '#3f3f46',
+      800: '#27272a',
+      900: '#18181b',
+      950: '#09090b',
     },
   },
   semanticTokens: {
     colors: {
-      // Background colors
-      'bg.page': {
-        default: 'gray.50',
-        _dark: 'gray.900',
-      },
-      'bg.surface': {
-        default: 'white',
-        _dark: 'gray.800',
-      },
-      'bg.subtle': {
-        default: 'gray.100',
-        _dark: 'gray.700',
-      },
-      'bg.muted': {
-        default: 'gray.200',
-        _dark: 'gray.600',
-      },
-      // Border colors
-      'border.default': {
-        default: 'gray.200',
-        _dark: 'gray.700',
-      },
-      'border.subtle': {
-        default: 'gray.100',
-        _dark: 'gray.750',
-      },
-      // Text colors
-      'text.primary': {
-        default: 'gray.800',
-        _dark: 'gray.100',
-      },
-      'text.secondary': {
-        default: 'gray.600',
-        _dark: 'gray.400',
-      },
-      'text.muted': {
-        default: 'gray.500',
-        _dark: 'gray.500',
-      },
-      // Accent colors (softer in dark mode)
-      'accent.teal': {
-        default: 'teal.600',
-        _dark: 'teal.300',
-      },
-      'accent.green': {
-        default: 'green.600',
-        _dark: 'green.400',
-      },
-      'accent.orange': {
-        default: 'orange.600',
-        _dark: 'orange.400',
-      },
+      'bg.page': '#0d0d0d',
+      'bg.surface': '#18181b',
+      'bg.card': '#121214',
+      'bg.subtle': '#27272a',
+      'bg.muted': '#3f3f46',
+      'border.default': '#27272a',
+      'border.subtle': '#1f1f23',
+      'text.primary': 'gray.100',
+      'text.secondary': 'gray.400',
+      'text.muted': 'gray.500',
+      'accent.purple': 'purple.500',
+      'accent.green': 'green.400',
+      'accent.orange': 'orange.400',
     },
   },
   components: {
     Button: {
       baseStyle: {
         fontWeight: 'medium',
+        borderRadius: 'xl',
+      },
+      variants: {
+        solid: {
+          bg: 'purple.600',
+          color: 'white',
+          _hover: {
+            bg: 'purple.500',
+          },
+          _active: {
+            bg: 'purple.700',
+          },
+        },
+        outline: {
+          borderColor: 'whiteAlpha.200',
+          color: 'gray.100',
+          _hover: {
+            bg: 'whiteAlpha.100',
+          },
+        },
+        ghost: {
+          color: 'gray.100',
+          _hover: {
+            bg: 'whiteAlpha.100',
+          },
+        },
+      },
+    },
+    Input: {
+      variants: {
+        filled: {
+          field: {
+            bg: 'gray.800',
+            borderRadius: 'xl',
+            _hover: {
+              bg: 'gray.700',
+            },
+            _focus: {
+              bg: 'gray.800',
+              borderColor: 'purple.500',
+              boxShadow: '0 0 0 1px var(--chakra-colors-purple-500)',
+            },
+          },
+        },
+      },
+      defaultProps: {
+        variant: 'filled',
       },
     },
     Badge: {
-      baseStyle: (props: { colorMode: string }) => ({
+      baseStyle: {
         textTransform: 'none',
         fontWeight: 'medium',
-        opacity: props.colorMode === 'dark' ? 0.9 : 1,
-      }),
+        borderRadius: 'full',
+      },
     },
     Tag: {
-      baseStyle: (props: { colorMode: string }) => ({
-        opacity: props.colorMode === 'dark' ? 0.95 : 1,
-      }),
+      baseStyle: {
+        container: {
+          borderRadius: 'full',
+        },
+      },
+    },
+    Modal: {
+      baseStyle: {
+        dialog: {
+          bg: '#0d0d0d',
+          borderRadius: '2xl',
+        },
+        overlay: {
+          bg: 'blackAlpha.800',
+          backdropFilter: 'blur(8px)',
+        },
+      },
     },
   },
 });

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef, RefObject } from 'react';
 import {
   Box,
   Flex,
@@ -254,6 +254,7 @@ export function Slideshow() {
   const [progress, setProgress] = useState(0);
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
   const progressRef = useRef<number>(0);
+  const modalContainerRef = useRef<HTMLDivElement>(null);
   const { isOpen: showSettings, onOpen: openSettings, onClose: closeSettings } = useDisclosure();
   const { isOpen: showDetails, onOpen: openDetails, onClose: closeDetailsModal } = useDisclosure();
 
@@ -405,17 +406,17 @@ export function Slideshow() {
     closeDetailsModal();
   }, [closeDetailsModal]);
 
-  // Auto-advance (pause when modal is open, reset on manual navigation)
+  // Auto-advance (pause when any modal is open, reset on manual navigation)
   useEffect(() => {
-    if (showDetails || shuffledMatches.length <= 1) return;
+    if (showDetails || showSettings || shuffledMatches.length <= 1) return;
 
     const timer = setInterval(goNext, interval * 1000);
     return () => clearInterval(timer);
-  }, [showDetails, interval, shuffledMatches.length, goNext, timerReset]);
+  }, [showDetails, showSettings, interval, shuffledMatches.length, goNext, timerReset]);
 
   // Progress bar animation
   useEffect(() => {
-    if (showDetails || shuffledMatches.length <= 1) {
+    if (showDetails || showSettings || shuffledMatches.length <= 1) {
       setProgress(0);
       return;
     }
@@ -441,7 +442,7 @@ export function Slideshow() {
 
     animationId = requestAnimationFrame(animate);
     return () => cancelAnimationFrame(animationId);
-  }, [showDetails, interval, shuffledMatches.length, currentIndex, timerReset]);
+  }, [showDetails, showSettings, interval, shuffledMatches.length, currentIndex, timerReset]);
 
   // Keyboard navigation
   useEffect(() => {
@@ -621,13 +622,17 @@ export function Slideshow() {
               x: kenBurnsVariant.x[0],
               y: kenBurnsVariant.y[0],
             } : { scale: 1, x: 0, y: 0 }}
-            animate={kenBurnsEnabled ? {
+            animate={(kenBurnsEnabled && !showDetails && !showSettings) ? {
               scale: kenBurnsVariant.scale[1],
               x: kenBurnsVariant.x[1],
               y: kenBurnsVariant.y[1],
-            } : { scale: 1, x: 0, y: 0 }}
+            } : {
+              scale: kenBurnsVariant.scale[0],
+              x: kenBurnsVariant.x[0],
+              y: kenBurnsVariant.y[0],
+            }}
             transition={{
-              duration: kenBurnsEnabled ? interval : 0,
+              duration: (kenBurnsEnabled && !showDetails && !showSettings) ? interval : 0,
               ease: 'linear',
             }}
           >
@@ -741,8 +746,11 @@ export function Slideshow() {
               {triedCocktails.includes(cocktail.id) && (
                 <MotionBox variants={badgeVariants}>
                   <Badge
-                    colorScheme="green"
+                    bg="#10b981"
+                    color="white"
                     fontSize={{ base: 'xs', md: 'sm' }}
+                    fontWeight="semibold"
+                    borderRadius="md"
                     px={2}
                     py={1}
                   >
@@ -753,8 +761,11 @@ export function Slideshow() {
               {heartedCocktails.includes(cocktail.id) && (
                 <MotionBox variants={badgeVariants}>
                   <Badge
-                    colorScheme="red"
+                    bg="#ef4444"
+                    color="white"
                     fontSize={{ base: 'xs', md: 'sm' }}
+                    fontWeight="semibold"
+                    borderRadius="md"
                     px={2}
                     py={1}
                   >
@@ -764,8 +775,11 @@ export function Slideshow() {
               )}
               <MotionBox variants={badgeVariants}>
                 <Badge
-                  colorScheme="purple"
+                  bg="#8b5cf6"
+                  color="white"
                   fontSize={{ base: 'xs', md: 'sm' }}
+                  fontWeight="semibold"
+                  borderRadius="md"
                   px={2}
                   py={1}
                 >
@@ -774,8 +788,11 @@ export function Slideshow() {
               </MotionBox>
               <MotionBox variants={badgeVariants}>
                 <Badge
-                  colorScheme="blue"
+                  bg="#6366f1"
+                  color="white"
                   fontSize={{ base: 'xs', md: 'sm' }}
+                  fontWeight="semibold"
+                  borderRadius="md"
                   px={2}
                   py={1}
                 >
@@ -785,8 +802,11 @@ export function Slideshow() {
               {cocktail.tags.map((tag) => (
                 <MotionBox key={tag} variants={badgeVariants}>
                   <Badge
-                    colorScheme="teal"
+                    bg="#0ea5e9"
+                    color="white"
                     fontSize={{ base: 'xs', md: 'sm' }}
+                    fontWeight="semibold"
+                    borderRadius="md"
                     px={2}
                     py={1}
                   >
@@ -1014,124 +1034,154 @@ export function Slideshow() {
         </Box>
       )}
 
-      {/* Settings Modal */}
-      <Modal isOpen={showSettings} onClose={closeSettings} isCentered size="md">
-        <ModalOverlay backdropFilter="blur(8px)" bg="blackAlpha.700" />
-        <ModalContent
-          bg="rgba(30, 30, 30, 0.95)"
-          backdropFilter="blur(20px)"
-          border="1px solid"
-          borderColor="whiteAlpha.200"
-          borderRadius="2xl"
-          mx={4}
-        >
-          <ModalHeader color="white" pb={2}>Slideshow Settings</ModalHeader>
-          <ModalCloseButton color="white" />
-          <ModalBody pb={6}>
-            <VStack align="stretch" spacing={5}>
-              {/* Slide Duration */}
-              <Box>
-                <Text color="white" mb={3} fontWeight="medium">
-                  Slide Duration: {interval}s
-                </Text>
-                <Slider
-                  value={interval}
-                  min={5}
-                  max={30}
-                  step={1}
-                  onChange={setSlideShowInterval}
-                >
-                  <SliderTrack bg="whiteAlpha.300">
-                    <SliderFilledTrack bg="teal.500" />
-                  </SliderTrack>
-                  <SliderThumb boxSize={5} />
-                </Slider>
-              </Box>
-
-              <Divider borderColor="whiteAlpha.200" />
-
-              {/* Animation Settings */}
-              <Text color="white" fontWeight="medium" fontSize="sm" textTransform="uppercase" letterSpacing="wide">
-                Animations
-              </Text>
-
-              <FormControl display="flex" alignItems="center" justifyContent="space-between">
-                <FormLabel color="white" mb={0} fontWeight="normal">
-                  Ken Burns Effect
-                </FormLabel>
-                <Switch
-                  isChecked={kenBurnsEnabled}
-                  onChange={(e) => setKenBurnsEnabled(e.target.checked)}
-                  colorScheme="teal"
-                  size="md"
-                />
-              </FormControl>
-
-              <FormControl display="flex" alignItems="center" justifyContent="space-between">
-                <FormLabel color="white" mb={0} fontWeight="normal">
-                  Film Grain
-                </FormLabel>
-                <Switch
-                  isChecked={filmGrainEnabled}
-                  onChange={(e) => setFilmGrainEnabled(e.target.checked)}
-                  colorScheme="teal"
-                  size="md"
-                />
-              </FormControl>
-
-              <FormControl display="flex" alignItems="center" justifyContent="space-between">
-                <FormLabel color="white" mb={0} fontWeight="normal">
-                  Retro Film Filter
-                </FormLabel>
-                <Switch
-                  isChecked={retroFilterEnabled}
-                  onChange={(e) => setRetroFilterEnabled(e.target.checked)}
-                  colorScheme="teal"
-                  size="md"
-                />
-              </FormControl>
-
-              <FormControl>
-                <FormLabel color="white" fontWeight="normal">
-                  Transition Speed
-                </FormLabel>
-                <Select
-                  value={transitionSpeed}
-                  onChange={(e) => setTransitionSpeed(e.target.value as 'slow' | 'normal' | 'fast')}
-                  bg="whiteAlpha.100"
-                  border="1px solid"
-                  borderColor="whiteAlpha.300"
-                  color="white"
-                  _hover={{ borderColor: 'whiteAlpha.400' }}
-                  _focus={{ borderColor: 'teal.500', boxShadow: '0 0 0 1px var(--chakra-colors-teal-500)' }}
-                >
-                  <option value="slow" style={{ background: '#1a1a1a' }}>Slow</option>
-                  <option value="normal" style={{ background: '#1a1a1a' }}>Normal</option>
-                  <option value="fast" style={{ background: '#1a1a1a' }}>Fast</option>
-                </Select>
-              </FormControl>
-
-              <Divider borderColor="whiteAlpha.200" />
-
-              {/* Keyboard Shortcuts */}
-              <Text color="whiteAlpha.600" fontSize="sm">
-                Keyboard: Arrow keys to navigate
-              </Text>
-            </VStack>
-          </ModalBody>
-        </ModalContent>
-      </Modal>
-
-      <CocktailModal
-        match={currentMatch}
-        isOpen={showDetails}
-        onClose={closeDetails}
-      />
     </Box>
     </div>
   );
 
   // Render via Chakra's Portal to maintain context while bypassing parent constraints
   if (!mounted) return null;
-  return <Portal>{slideshowContent}</Portal>;
+
+  // Settings modal content - using portalProps to render into our high z-index container
+  const settingsModal = (
+    <Modal
+      isOpen={showSettings}
+      onClose={closeSettings}
+      isCentered
+      size="md"
+      portalProps={{ containerRef: modalContainerRef }}
+    >
+      <ModalOverlay backdropFilter="blur(8px)" bg="blackAlpha.700" />
+      <ModalContent
+        bg="rgba(30, 30, 30, 0.95)"
+        backdropFilter="blur(20px)"
+        border="1px solid"
+        borderColor="whiteAlpha.200"
+        borderRadius="2xl"
+        mx={4}
+      >
+        <ModalHeader color="white" pb={2}>Slideshow Settings</ModalHeader>
+        <ModalCloseButton color="white" />
+        <ModalBody pb={6}>
+          <VStack align="stretch" spacing={5}>
+            {/* Slide Duration */}
+            <Box>
+              <Text color="white" mb={3} fontWeight="medium">
+                Slide Duration: {interval}s
+              </Text>
+              <Slider
+                value={interval}
+                min={5}
+                max={30}
+                step={1}
+                onChange={setSlideShowInterval}
+              >
+                <SliderTrack bg="whiteAlpha.300">
+                  <SliderFilledTrack bg="teal.500" />
+                </SliderTrack>
+                <SliderThumb boxSize={5} />
+              </Slider>
+            </Box>
+
+            <Divider borderColor="whiteAlpha.200" />
+
+            {/* Animation Settings */}
+            <Text color="white" fontWeight="medium" fontSize="sm" textTransform="uppercase" letterSpacing="wide">
+              Animations
+            </Text>
+
+            <FormControl display="flex" alignItems="center" justifyContent="space-between">
+              <FormLabel color="white" mb={0} fontWeight="normal">
+                Ken Burns Effect
+              </FormLabel>
+              <Switch
+                isChecked={kenBurnsEnabled}
+                onChange={(e) => setKenBurnsEnabled(e.target.checked)}
+                colorScheme="teal"
+                size="md"
+              />
+            </FormControl>
+
+            <FormControl display="flex" alignItems="center" justifyContent="space-between">
+              <FormLabel color="white" mb={0} fontWeight="normal">
+                Film Grain
+              </FormLabel>
+              <Switch
+                isChecked={filmGrainEnabled}
+                onChange={(e) => setFilmGrainEnabled(e.target.checked)}
+                colorScheme="teal"
+                size="md"
+              />
+            </FormControl>
+
+            <FormControl display="flex" alignItems="center" justifyContent="space-between">
+              <FormLabel color="white" mb={0} fontWeight="normal">
+                Retro Film Filter
+              </FormLabel>
+              <Switch
+                isChecked={retroFilterEnabled}
+                onChange={(e) => setRetroFilterEnabled(e.target.checked)}
+                colorScheme="teal"
+                size="md"
+              />
+            </FormControl>
+
+            <FormControl>
+              <FormLabel color="white" fontWeight="normal">
+                Transition Speed
+              </FormLabel>
+              <Select
+                value={transitionSpeed}
+                onChange={(e) => setTransitionSpeed(e.target.value as 'slow' | 'normal' | 'fast')}
+                bg="whiteAlpha.100"
+                border="1px solid"
+                borderColor="whiteAlpha.300"
+                color="white"
+                _hover={{ borderColor: 'whiteAlpha.400' }}
+                _focus={{ borderColor: 'teal.500', boxShadow: '0 0 0 1px var(--chakra-colors-teal-500)' }}
+              >
+                <option value="slow" style={{ background: '#1a1a1a' }}>Slow</option>
+                <option value="normal" style={{ background: '#1a1a1a' }}>Normal</option>
+                <option value="fast" style={{ background: '#1a1a1a' }}>Fast</option>
+              </Select>
+            </FormControl>
+
+            <Divider borderColor="whiteAlpha.200" />
+
+            {/* Keyboard Shortcuts */}
+            <Text color="whiteAlpha.600" fontSize="sm">
+              Keyboard: Arrow keys to navigate
+            </Text>
+          </VStack>
+        </ModalBody>
+      </ModalContent>
+    </Modal>
+  );
+
+  return (
+    <>
+      <Portal>{slideshowContent}</Portal>
+
+      {/* High z-index container for modals to render into */}
+      <div
+        ref={modalContainerRef}
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: 0,
+          height: 0,
+          zIndex: 10000,
+        }}
+      />
+
+      {/* Modals - they render into modalContainerRef via portalProps */}
+      {settingsModal}
+      <CocktailModal
+        match={currentMatch}
+        isOpen={showDetails}
+        onClose={closeDetails}
+        portalContainerRef={modalContainerRef}
+      />
+    </>
+  );
 }

@@ -11,7 +11,6 @@ import {
   Wrap,
   WrapItem,
   HStack,
-  useColorModeValue,
   useToast,
 } from '@chakra-ui/react';
 import { DownloadIcon } from '@chakra-ui/icons';
@@ -76,25 +75,25 @@ export function IngredientList() {
     e.target.value = '';
   };
 
-  const bgEmpty = useColorModeValue('gray.100', 'gray.700');
-  const textMuted = useColorModeValue('gray.500', 'gray.400');
-
   if (myIngredients.length === 0) {
     return (
       <Box
         p={6}
         textAlign="center"
-        bg={bgEmpty}
-        borderRadius="md"
+        border="2px dashed"
+        borderColor="whiteAlpha.200"
+        borderRadius="xl"
       >
-        <Text color={textMuted} mb={4}>
+        <Text color="gray.400" mb={4}>
           No ingredients added yet. Search and add ingredients above.
         </Text>
         <Button
           size="sm"
-          colorScheme="teal"
-          variant="outline"
+          bgGradient="linear(to-r, purple.600, purple.500)"
+          color="white"
+          _hover={{ bgGradient: 'linear(to-r, purple.500, purple.400)' }}
           onClick={loadDefaultIngredients}
+          borderRadius="xl"
         >
           Load Default Bar
         </Button>
@@ -104,14 +103,17 @@ export function IngredientList() {
 
   return (
     <Box>
-      <Wrap spacing={2}>
+      <Wrap spacing={2} overflow="visible">
         {myIngredients.map((ingredient) => (
           <WrapItem key={ingredient}>
             <Tag
               size="md"
-              colorScheme="teal"
+              bg="purple.500"
+              color="white"
               borderRadius="full"
-              variant="subtle"
+              fontWeight="medium"
+              px={3}
+              py={1}
             >
               <TagLabel>{ingredient}</TagLabel>
               <TagCloseButton onClick={() => removeIngredient(ingredient)} />
@@ -124,17 +126,23 @@ export function IngredientList() {
         <Button
           size="sm"
           variant="outline"
-          colorScheme="teal"
+          borderColor="whiteAlpha.200"
+          color="gray.100"
+          _hover={{ bg: 'whiteAlpha.100' }}
           leftIcon={<DownloadIcon />}
           onClick={handleExport}
+          borderRadius="xl"
         >
           Export
         </Button>
         <Button
           size="sm"
           variant="outline"
-          colorScheme="teal"
+          borderColor="whiteAlpha.200"
+          color="gray.100"
+          _hover={{ bg: 'whiteAlpha.100' }}
           onClick={() => fileInputRef.current?.click()}
+          borderRadius="xl"
         >
           Import
         </Button>

@@ -7,7 +7,6 @@ import {
   ModalHeader,
   ModalBody,
   ModalCloseButton,
-  Image,
   Text,
   Badge,
   VStack,
@@ -22,10 +21,10 @@ import {
   WrapItem,
   Button,
   Textarea,
-  useColorModeValue,
 } from '@chakra-ui/react';
 import { CheckCircleIcon, WarningIcon } from '@chakra-ui/icons';
 import { useStore } from '@/store/useStore';
+import { CocktailImage } from './CocktailImage';
 import type { CocktailMatch } from '@/types';
 
 // Checkmark icon component (outline only)
@@ -58,15 +57,10 @@ interface CocktailModalProps {
   match: CocktailMatch | null;
   isOpen: boolean;
   onClose: () => void;
+  portalContainerRef?: React.RefObject<HTMLDivElement>;
 }
 
-export function CocktailModal({ match, isOpen, onClose }: CocktailModalProps) {
-  const bgModal = useColorModeValue('white', 'gray.800');
-  const textPrimary = useColorModeValue('gray.800', 'gray.100');
-  const textSecondary = useColorModeValue('gray.600', 'gray.400');
-  const borderColor = useColorModeValue('gray.200', 'gray.700');
-  const bgInput = useColorModeValue('gray.50', 'gray.700');
-
+export function CocktailModal({ match, isOpen, onClose, portalContainerRef }: CocktailModalProps) {
   const triedCocktails = useStore((state) => state.triedCocktails);
   const heartedCocktails = useStore((state) => state.heartedCocktails);
   const cocktailNotes = useStore((state) => state.cocktailNotes);
@@ -83,29 +77,35 @@ export function CocktailModal({ match, isOpen, onClose }: CocktailModalProps) {
   const missingLower = missingIngredients.map((m) => m.toLowerCase());
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="4xl" scrollBehavior="inside">
-      <ModalOverlay backdropFilter="blur(4px)" />
-      <ModalContent bg={bgModal} mx={4}>
-        <ModalHeader pr={12} color={textPrimary}>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      size="4xl"
+      scrollBehavior="inside"
+      portalProps={portalContainerRef ? { containerRef: portalContainerRef } : undefined}
+    >
+      <ModalOverlay bg="blackAlpha.800" backdropFilter="blur(8px)" />
+      <ModalContent bg="#0d0d0d" mx={4} borderRadius="2xl" border="1px solid" borderColor="whiteAlpha.100">
+        <ModalHeader pr={12} color="gray.100">
           {cocktail.name}
         </ModalHeader>
-        <ModalCloseButton />
+        <ModalCloseButton color="gray.400" />
         <ModalBody pb={6}>
           <Flex gap={6} direction={{ base: 'column', md: 'row' }}>
             {/* Left Column - Image & Ingredients */}
             <VStack spacing={4} flex="0 0 auto" w={{ base: '100%', md: '240px' }} align="stretch">
-              <Image
-                src={cocktail.thumbnail}
-                alt={cocktail.name}
-                w="100%"
+              <CocktailImage
+                cocktailId={cocktail.id}
+                thumbnailUrl={cocktail.thumbnail}
+                name={cocktail.name}
                 aspectRatio="1"
-                objectFit="cover"
-                borderRadius="lg"
+                borderRadius="xl"
+                fallbackSize="6xl"
               />
 
               {/* Ingredients */}
               <Box w="100%">
-                <Text fontWeight="semibold" mb={2} color={textPrimary} fontSize="sm">
+                <Text fontWeight="semibold" mb={2} color="gray.100" fontSize="sm">
                   Ingredients
                 </Text>
                 <List spacing={1}>
@@ -116,12 +116,12 @@ export function CocktailModal({ match, isOpen, onClose }: CocktailModalProps) {
                         key={`${ing.name}-${index}`}
                         display="flex"
                         alignItems="center"
-                        color={isMissing ? 'red.500' : textPrimary}
+                        color={isMissing ? '#ef4444' : 'gray.100'}
                         fontSize="sm"
                       >
                         <ListIcon
                           as={isMissing ? WarningIcon : CheckCircleIcon}
-                          color={isMissing ? 'red.500' : 'green.500'}
+                          color={isMissing ? '#ef4444' : '#10b981'}
                         />
                         <Text>
                           {ing.measure && <Text as="span" fontWeight="medium">{ing.measure} </Text>}
@@ -142,9 +142,13 @@ export function CocktailModal({ match, isOpen, onClose }: CocktailModalProps) {
                   size="sm"
                   flex={1}
                   leftIcon={<Box as="span"><CheckIcon /></Box>}
-                  colorScheme={isTried ? 'green' : 'gray'}
-                  variant={isTried ? 'solid' : 'outline'}
+                  bg={isTried ? '#10b981' : 'transparent'}
+                  color={isTried ? 'white' : 'gray.400'}
+                  border="1px solid"
+                  borderColor={isTried ? '#10b981' : 'whiteAlpha.200'}
+                  _hover={{ bg: isTried ? '#059669' : 'whiteAlpha.100' }}
                   onClick={() => toggleTried(cocktail.id)}
+                  borderRadius="xl"
                 >
                   {isTried ? 'Tried' : 'Tried'}
                 </Button>
@@ -152,9 +156,13 @@ export function CocktailModal({ match, isOpen, onClose }: CocktailModalProps) {
                   size="sm"
                   flex={1}
                   leftIcon={<Box as="span"><HeartIcon /></Box>}
-                  colorScheme={isHearted ? 'red' : 'gray'}
-                  variant={isHearted ? 'solid' : 'outline'}
+                  bg={isHearted ? '#ef4444' : 'transparent'}
+                  color={isHearted ? 'white' : 'gray.400'}
+                  border="1px solid"
+                  borderColor={isHearted ? '#ef4444' : 'whiteAlpha.200'}
+                  _hover={{ bg: isHearted ? '#dc2626' : 'whiteAlpha.100' }}
                   onClick={() => toggleHearted(cocktail.id)}
+                  borderRadius="xl"
                 >
                   {isHearted ? 'Favorite' : 'Favorite'}
                 </Button>
@@ -163,46 +171,60 @@ export function CocktailModal({ match, isOpen, onClose }: CocktailModalProps) {
               {/* Badges */}
               <Wrap spacing={2} w="100%">
                 <WrapItem>
-                  <Badge colorScheme={isFullMatch ? 'green' : 'orange'} fontSize="sm">
+                  <Badge
+                    bg={isFullMatch ? '#10b981' : '#f59e0b'}
+                    color="white"
+                    fontSize="sm"
+                    borderRadius="md"
+                    px={3}
+                    py={1}
+                    fontWeight="semibold"
+                  >
                     {isFullMatch ? 'Ready' : `Missing ${missingIngredients.length}`}
                   </Badge>
                 </WrapItem>
                 <WrapItem>
-                  <Badge colorScheme="purple" fontSize="sm">
+                  <Badge bg="#8b5cf6" color="white" fontSize="sm" borderRadius="md" px={3} py={1} fontWeight="semibold">
                     {cocktail.category}
                   </Badge>
                 </WrapItem>
                 <WrapItem>
-                  <Badge colorScheme="blue" fontSize="sm">
+                  <Badge bg="#6366f1" color="white" fontSize="sm" borderRadius="md" px={3} py={1} fontWeight="semibold">
                     {cocktail.glass}
                   </Badge>
                 </WrapItem>
                 {cocktail.tags.map((tag) => (
                   <WrapItem key={tag}>
-                    <Badge colorScheme="teal" fontSize="sm">
+                    <Badge bg="#0ea5e9" color="white" fontSize="sm" borderRadius="md" px={3} py={1} fontWeight="semibold">
                       {tag}
                     </Badge>
                   </WrapItem>
                 ))}
               </Wrap>
 
-              <Divider borderColor={borderColor} />
+              <Divider borderColor="whiteAlpha.100" />
 
               {/* Instructions */}
               <Box>
-                <Text fontWeight="semibold" mb={2} color={textPrimary}>
+                <Text fontWeight="semibold" mb={2} color="gray.100">
                   Instructions
                 </Text>
-                <Text color={textSecondary} whiteSpace="pre-wrap" fontSize="sm">
-                  {cocktail.instructions}
-                </Text>
+                <Box
+                  bg="whiteAlpha.50"
+                  p={4}
+                  borderRadius="xl"
+                >
+                  <Text color="gray.300" whiteSpace="pre-wrap" fontSize="sm">
+                    {cocktail.instructions}
+                  </Text>
+                </Box>
               </Box>
 
-              <Divider borderColor={borderColor} />
+              <Divider borderColor="whiteAlpha.100" />
 
               {/* Notes */}
               <Box>
-                <Text fontWeight="semibold" mb={2} color={textPrimary}>
+                <Text fontWeight="semibold" mb={2} color="gray.100">
                   My Notes
                 </Text>
                 <Textarea
@@ -212,9 +234,15 @@ export function CocktailModal({ match, isOpen, onClose }: CocktailModalProps) {
                   size="sm"
                   resize="vertical"
                   minH="120px"
-                  bg={bgInput}
-                  borderColor={borderColor}
-                  _placeholder={{ color: textSecondary }}
+                  bg="gray.800"
+                  border="none"
+                  borderRadius="xl"
+                  color="gray.100"
+                  _placeholder={{ color: 'gray.500' }}
+                  _focus={{
+                    bg: 'gray.800',
+                    boxShadow: '0 0 0 1px var(--chakra-colors-purple-500)',
+                  }}
                 />
               </Box>
             </VStack>

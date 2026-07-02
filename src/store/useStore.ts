@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
 import type { AppState, Cocktail } from '@/types';
 
 // Typical home bar ingredients for testing
@@ -40,6 +40,7 @@ export const useStore = create<AppState>()(
     (set) => ({
       myIngredients: DEFAULT_INGREDIENTS,
       cachedCocktails: {},
+      customCocktails: [],
       slideShowSettings: {
         interval: 8,
         kenBurnsEnabled: true,
@@ -81,6 +82,23 @@ export const useStore = create<AppState>()(
             ...state.cachedCocktails,
             [cocktail.id]: cocktail,
           },
+        })),
+
+      addCustomCocktail: (cocktail: Cocktail) =>
+        set((state) => ({
+          customCocktails: [...state.customCocktails, cocktail],
+        })),
+
+      updateCustomCocktail: (cocktail: Cocktail) =>
+        set((state) => ({
+          customCocktails: state.customCocktails.map((c) =>
+            c.id === cocktail.id ? cocktail : c
+          ),
+        })),
+
+      deleteCustomCocktail: (cocktailId: string) =>
+        set((state) => ({
+          customCocktails: state.customCocktails.filter((c) => c.id !== cocktailId),
         })),
 
       setSlideShowInterval: (interval: number) =>
@@ -166,6 +184,7 @@ export const useStore = create<AppState>()(
     }),
     {
       name: 'cocktail-showcase-storage',
+      storage: createJSONStorage(() => localStorage),
     }
   )
 );

@@ -41,6 +41,7 @@ async function getAllCocktails(): Promise<Cocktail[]> {
 
 export function useCocktails(browseAll: boolean = false) {
   const myIngredients = useStore((state) => state.myIngredients);
+  const customCocktails = useStore((state) => state.customCocktails);
 
   const [matches, setMatches] = useState<CocktailMatch[]>([]);
   const [totalCount, setTotalCount] = useState<number>(0);
@@ -49,8 +50,8 @@ export function useCocktails(browseAll: boolean = false) {
   const [error, setError] = useState<Error | null>(null);
 
   const loadCocktails = useCallback(async () => {
-    // In "My Matches" mode with no ingredients, show nothing
-    if (!browseAll && myIngredients.length === 0) {
+    // In "My Matches" mode with no ingredients, only show custom cocktails
+    if (!browseAll && myIngredients.length === 0 && customCocktails.length === 0) {
       setMatches([]);
       return;
     }
@@ -61,7 +62,9 @@ export function useCocktails(browseAll: boolean = false) {
     try {
       // Always fetch all cocktails and filter locally
       // The filter.php API is limited on the free tier
-      const allCocktails = await getAllCocktails();
+      const fetchedCocktails = await getAllCocktails();
+      // Merge with custom cocktails (custom cocktails appear first)
+      const allCocktails = [...customCocktails, ...fetchedCocktails];
       setTotalCount(allCocktails.length);
 
       // Match and sort cocktails
@@ -71,13 +74,20 @@ export function useCocktails(browseAll: boolean = false) {
       const withMatches = matched.filter(m => m.matchedIngredients.length > 0);
       setMatchedCount(withMatches.length);
 
+      // Custom cocktails should always be visible regardless of ingredient matching
+      const customCocktailIds = new Set(customCocktails.map(c => c.id));
+
       let filtered: CocktailMatch[];
       if (browseAll) {
         // Show all cocktails
         filtered = matched;
       } else {
         // Only show cocktails with at least one matching ingredient
-        filtered = withMatches;
+        // BUT always include custom cocktails
+        const withMatchesOrCustom = matched.filter(
+          m => m.matchedIngredients.length > 0 || customCocktailIds.has(m.cocktail.id)
+        );
+        filtered = withMatchesOrCustom;
       }
 
       const sorted = sortByMatch(filtered);
@@ -87,7 +97,7 @@ export function useCocktails(browseAll: boolean = false) {
     } finally {
       setLoading(false);
     }
-  }, [myIngredients, browseAll]);
+  }, [myIngredients, browseAll, customCocktails]);
 
   useEffect(() => {
     loadCocktails();

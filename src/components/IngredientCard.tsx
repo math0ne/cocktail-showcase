@@ -2,13 +2,12 @@
 
 import {
   Box,
-  Image,
   Text,
   Badge,
-  useColorModeValue,
 } from '@chakra-ui/react';
 import { CheckIcon, AddIcon } from '@chakra-ui/icons';
 import { getIngredientImageUrl } from '@/lib/images';
+import { IngredientImage } from './IngredientImage';
 
 interface IngredientCardProps {
   ingredient: string;
@@ -17,49 +16,31 @@ interface IngredientCardProps {
 }
 
 export function IngredientCard({ ingredient, isAdded, onClick }: IngredientCardProps) {
-  const bgCard = useColorModeValue('white', 'gray.800');
-  const borderColor = useColorModeValue('gray.200', 'gray.700');
-  const borderAdded = useColorModeValue('green.400', 'green.500');
-  const textPrimary = useColorModeValue('gray.700', 'gray.100');
-
   const imageUrl = getIngredientImageUrl(ingredient, 'Small');
 
   return (
     <Box
-      borderRadius="xl"
+      borderRadius="2xl"
       overflow="hidden"
-      bg={bgCard}
-      boxShadow="sm"
+      bg="#121214"
       border="1px solid"
-      borderColor={isAdded ? borderAdded : borderColor}
-      transition="transform 0.2s, box-shadow 0.2s"
-      _hover={isAdded ? {} : { transform: 'translateY(-2px)', boxShadow: 'md' }}
+      borderColor={isAdded ? 'green.500' : 'whiteAlpha.100'}
+      transition="all 0.2s ease"
+      _hover={isAdded ? {} : {
+        transform: 'translateY(-2px)',
+        boxShadow: '0 8px 24px rgba(124,58,237,0.15)',
+      }}
       cursor={isAdded ? 'default' : 'pointer'}
       opacity={isAdded ? 0.7 : 1}
       onClick={isAdded ? undefined : onClick}
     >
       {/* Image container */}
       <Box position="relative" overflow="hidden" p={3} pb={0}>
-        <Image
-          src={imageUrl}
-          alt={ingredient}
-          w="100%"
+        <IngredientImage
+          ingredientName={ingredient}
+          fallbackUrl={imageUrl}
           aspectRatio="1"
           objectFit="contain"
-          loading="lazy"
-          fallback={
-            <Box
-              w="100%"
-              aspectRatio="1"
-              display="flex"
-              alignItems="center"
-              justifyContent="center"
-              bg="gray.100"
-              fontSize="3xl"
-            >
-              🍸
-            </Box>
-          }
         />
         {/* Status badge */}
         {isAdded ? (
@@ -71,7 +52,7 @@ export function IngredientCard({ ingredient, isAdded, onClick }: IngredientCardP
             fontSize="xs"
             px={2}
             py={1}
-            borderRadius="md"
+            borderRadius="full"
             display="flex"
             alignItems="center"
             gap={1}
@@ -83,13 +64,15 @@ export function IngredientCard({ ingredient, isAdded, onClick }: IngredientCardP
             position="absolute"
             top={4}
             right={4}
-            bg="blackAlpha.600"
+            bg="purple.600"
             borderRadius="full"
             w={6}
             h={6}
             display="flex"
             alignItems="center"
             justifyContent="center"
+            transition="all 0.2s"
+            _groupHover={{ bg: 'purple.500' }}
           >
             <AddIcon boxSize={3} color="white" />
           </Box>
@@ -101,7 +84,7 @@ export function IngredientCard({ ingredient, isAdded, onClick }: IngredientCardP
           fontWeight="medium"
           fontSize="sm"
           noOfLines={1}
-          color={textPrimary}
+          color="gray.100"
         >
           {ingredient}
         </Text>

@@ -11,15 +11,16 @@ import {
   Button,
   ButtonGroup,
   Flex,
-  useColorModeValue,
   Icon,
+  useDisclosure,
 } from '@chakra-ui/react';
+import { AddIcon } from '@chakra-ui/icons';
 import Link from 'next/link';
 import { CocktailGrid } from '@/components/CocktailGrid';
 import { IngredientPicker } from '@/components/IngredientPicker';
 import { IngredientList } from '@/components/IngredientList';
 import { FreshIngredients } from '@/components/FreshIngredients';
-import { ColorModeToggle } from '@/components/ColorModeToggle';
+import { CreateDrinkModal } from '@/components/CreateDrinkModal';
 import { useStore } from '@/store/useStore';
 import { useCocktails } from '@/hooks/useCocktails';
 
@@ -39,24 +40,15 @@ export default function HomePage() {
   const [view, setView] = useState<ViewMode>('drinks');
   const myIngredients = useStore((state) => state.myIngredients);
   const { fullMatches, matches } = useCocktails();
-
-  // Semantic colors
-  const bgPage = useColorModeValue('gray.50', 'gray.900');
-  const bgSurface = useColorModeValue('white', 'gray.800');
-  const borderColor = useColorModeValue('gray.200', 'gray.700');
-  const textPrimary = useColorModeValue('gray.800', 'gray.100');
-  const textSecondary = useColorModeValue('gray.600', 'gray.400');
-  const accentTeal = useColorModeValue('teal.600', 'teal.400');
-  const accentGreen = useColorModeValue('green.600', 'green.400');
-  const accentOrange = useColorModeValue('orange.600', 'orange.400');
+  const { isOpen: isCreateDrinkOpen, onOpen: onCreateDrinkOpen, onClose: onCreateDrinkClose } = useDisclosure();
 
   return (
-    <Box minH="100vh" bg={bgPage}>
+    <Box minH="100vh" bg="#0d0d0d">
       {/* Header */}
       <Box
-        bg={bgSurface}
+        bg="#0d0d0d"
         borderBottom="1px solid"
-        borderColor={borderColor}
+        borderColor="whiteAlpha.100"
         py={3}
         px={{ base: 4, md: 6 }}
         sx={{
@@ -67,32 +59,44 @@ export default function HomePage() {
           {/* Logo and Stats */}
           <HStack spacing={6}>
             <HStack spacing={2}>
-              <CocktailLogo boxSize={7} color={accentTeal} />
-              <Heading size="md" color={accentTeal}>
+              <CocktailLogo boxSize={7} color="purple.400" />
+              <Heading
+                size="md"
+                bgGradient="linear(to-r, purple.400, purple.200)"
+                bgClip="text"
+                fontWeight="bold"
+              >
                 Cocktails
               </Heading>
             </HStack>
 
-            {/* Stats in header */}
+            {/* Stats in header - pill container */}
             {myIngredients.length > 0 && (
-              <HStack spacing={4} display={{ base: 'none', md: 'flex' }}>
+              <HStack
+                spacing={4}
+                display={{ base: 'none', md: 'flex' }}
+                bg="whiteAlpha.50"
+                px={4}
+                py={1.5}
+                borderRadius="xl"
+              >
                 <HStack spacing={1}>
-                  <Text fontSize="lg" fontWeight="bold" color={accentTeal}>
+                  <Text fontSize="lg" fontWeight="bold" color="purple.400">
                     {myIngredients.length}
                   </Text>
-                  <Text color={textSecondary} fontSize="xs">ingredients</Text>
+                  <Text color="gray.400" fontSize="xs">ingredients</Text>
                 </HStack>
                 <HStack spacing={1}>
-                  <Text fontSize="lg" fontWeight="bold" color={accentGreen}>
+                  <Text fontSize="lg" fontWeight="bold" color="green.400">
                     {fullMatches.length}
                   </Text>
-                  <Text color={textSecondary} fontSize="xs">ready</Text>
+                  <Text color="gray.400" fontSize="xs">ready</Text>
                 </HStack>
                 <HStack spacing={1}>
-                  <Text fontSize="lg" fontWeight="bold" color={accentOrange}>
+                  <Text fontSize="lg" fontWeight="bold" color="orange.400">
                     {matches.length - fullMatches.length}
                   </Text>
-                  <Text color={textSecondary} fontSize="xs">close</Text>
+                  <Text color="gray.400" fontSize="xs">close</Text>
                 </HStack>
               </HStack>
             )}
@@ -101,30 +105,52 @@ export default function HomePage() {
           {/* Actions */}
           <HStack spacing={3}>
             {/* Navigation Toggle */}
-            <ButtonGroup isAttached size="sm">
-              <Button
-                colorScheme="teal"
-                variant={view === 'bar' ? 'solid' : 'outline'}
-                onClick={() => setView('bar')}
-              >
-                Bar
-              </Button>
-              <Button
-                colorScheme="teal"
-                variant={view === 'drinks' ? 'solid' : 'outline'}
-                onClick={() => setView('drinks')}
-              >
-                Drinks
-              </Button>
-            </ButtonGroup>
+            <Box
+              bg="gray.800"
+              p={1}
+              borderRadius="xl"
+              display="flex"
+              alignItems="center"
+            >
+              <ButtonGroup isAttached variant="ghost" size="sm">
+                <Button
+                  bg={view === 'bar' ? 'purple.600' : 'transparent'}
+                  color={view === 'bar' ? 'white' : 'gray.400'}
+                  _hover={{ bg: view === 'bar' ? 'purple.500' : 'whiteAlpha.100' }}
+                  onClick={() => setView('bar')}
+                  borderRadius="lg"
+                >
+                  Bar
+                </Button>
+                <Button
+                  bg={view === 'drinks' ? 'purple.600' : 'transparent'}
+                  color={view === 'drinks' ? 'white' : 'gray.400'}
+                  _hover={{ bg: view === 'drinks' ? 'purple.500' : 'whiteAlpha.100' }}
+                  onClick={() => setView('drinks')}
+                  borderRadius="lg"
+                >
+                  Drinks
+                </Button>
+              </ButtonGroup>
+            </Box>
             {fullMatches.length > 0 && (
               <Link href="/slideshow" passHref legacyBehavior>
-                <Button as="a" colorScheme="teal" size="sm" display={{ base: 'none', md: 'inline-flex' }}>
+                <Button
+                  as="a"
+                  size="sm"
+                  h="32px"
+                  px={3}
+                  display={{ base: 'none', md: 'inline-flex' }}
+                  bgGradient="linear(to-r, purple.600, purple.500)"
+                  color="white"
+                  _hover={{ bgGradient: 'linear(to-r, purple.500, purple.400)' }}
+                  borderRadius="lg"
+                  fontWeight="medium"
+                >
                   Slideshow
                 </Button>
               </Link>
             )}
-            <ColorModeToggle />
           </HStack>
         </Flex>
       </Box>
@@ -139,14 +165,13 @@ export default function HomePage() {
           <VStack spacing={6} align="stretch">
             {/* Quick Toggles */}
             <Box
-              bg={bgSurface}
+              bg="#121214"
               p={4}
-              borderRadius="xl"
+              borderRadius="2xl"
               border="1px solid"
-              borderColor={borderColor}
-              shadow="sm"
+              borderColor="whiteAlpha.100"
             >
-              <Heading size="md" mb={4} color={textPrimary}>
+              <Heading size="md" mb={4} color="gray.100">
                 Quick Toggles
               </Heading>
               <FreshIngredients />
@@ -159,26 +184,37 @@ export default function HomePage() {
             >
               {/* Ingredient List */}
               <Box
-                bg={bgSurface}
+                bg="#121214"
                 p={6}
-                borderRadius="xl"
+                borderRadius="2xl"
                 border="1px solid"
-                borderColor={borderColor}
-                shadow="sm"
+                borderColor="whiteAlpha.100"
               >
-                <Heading size="md" mb={4} color={textPrimary}>
-                  Your Bar Stock
-                </Heading>
+                <Flex justify="space-between" align="center" mb={4}>
+                  <Heading size="md" color="gray.100">
+                    Your Bar Stock
+                  </Heading>
+                  <Button
+                    size="sm"
+                    leftIcon={<AddIcon boxSize={3} />}
+                    bg="purple.600"
+                    color="white"
+                    _hover={{ bg: 'purple.500' }}
+                    borderRadius="lg"
+                    onClick={onCreateDrinkOpen}
+                  >
+                    Create Drink
+                  </Button>
+                </Flex>
                 <IngredientList />
               </Box>
 
               {/* Ingredient Picker */}
               <Box
-                bg={bgSurface}
-                borderRadius="xl"
+                bg="#121214"
+                borderRadius="2xl"
                 border="1px solid"
-                borderColor={borderColor}
-                shadow="sm"
+                borderColor="whiteAlpha.100"
                 position="relative"
                 minH={{ base: '400px', lg: 'auto' }}
               >
@@ -190,7 +226,7 @@ export default function HomePage() {
                   flexDirection="column"
                   overflow="hidden"
                 >
-                  <Heading size="md" mb={4} color={textPrimary} flexShrink={0}>
+                  <Heading size="md" mb={4} color="gray.100" flexShrink={0}>
                     Add Ingredients
                   </Heading>
                   <Box flex={1} minH={0} overflow="hidden">
@@ -202,6 +238,8 @@ export default function HomePage() {
           </VStack>
         </Container>
       )}
+
+      <CreateDrinkModal isOpen={isCreateDrinkOpen} onClose={onCreateDrinkClose} />
     </Box>
   );
 }

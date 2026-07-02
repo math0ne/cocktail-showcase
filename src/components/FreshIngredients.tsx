@@ -6,8 +6,6 @@ import {
   WrapItem,
   Button,
   Text,
-  VStack,
-  useColorModeValue,
 } from '@chakra-ui/react';
 import { useStore } from '@/store/useStore';
 
@@ -70,19 +68,20 @@ export function FreshIngredients() {
     }
   };
 
-  const activeBg = useColorModeValue('teal.500', 'teal.400');
-  const activeColor = useColorModeValue('white', 'gray.900');
-  const inactiveBg = useColorModeValue('gray.100', 'gray.700');
-  const inactiveColor = useColorModeValue('gray.600', 'gray.300');
-  const labelColor = useColorModeValue('gray.500', 'gray.400');
-
   return (
     <Wrap spacing={1} align="center">
       {INGREDIENT_CATEGORIES.map((category, idx) => (
         <>
           {idx > 0 && <WrapItem key={`sep-${category.name}`}><Box w={2} /></WrapItem>}
           <WrapItem key={`label-${category.name}`}>
-            <Text fontSize="sm" fontWeight="medium" color={labelColor} mr={1}>
+            <Text
+              fontSize="xs"
+              fontWeight="semibold"
+              color="gray.500"
+              mr={1}
+              textTransform="uppercase"
+              letterSpacing="wider"
+            >
               {category.name}:
             </Text>
           </WrapItem>
@@ -94,11 +93,11 @@ export function FreshIngredients() {
                   size="sm"
                   h="28px"
                   px={3}
-                  bg={active ? activeBg : inactiveBg}
-                  color={active ? activeColor : inactiveColor}
+                  bg={active ? 'purple.600' : 'gray.800'}
+                  color={active ? 'white' : 'gray.400'}
+                  borderRadius="full"
                   _hover={{
-                    bg: active ? 'teal.600' : 'gray.200',
-                    _dark: { bg: active ? 'teal.500' : 'gray.600' },
+                    bg: active ? 'purple.500' : 'gray.700',
                   }}
                   onClick={() => toggleIngredient(ingredient)}
                   fontWeight={active ? 'medium' : 'normal'}

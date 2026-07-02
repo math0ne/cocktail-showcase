@@ -92,6 +92,7 @@ export interface SlideShowSettings {
 export interface AppState {
   myIngredients: string[];
   cachedCocktails: Record<string, Cocktail>;
+  customCocktails: Cocktail[];
   slideShowSettings: SlideShowSettings;
   triedCocktails: string[];
   heartedCocktails: string[];
@@ -99,6 +100,9 @@ export interface AppState {
   addIngredient: (ingredient: string) => void;
   removeIngredient: (ingredient: string) => void;
   cacheCocktail: (cocktail: Cocktail) => void;
+  addCustomCocktail: (cocktail: Cocktail) => void;
+  updateCustomCocktail: (cocktail: Cocktail) => void;
+  deleteCustomCocktail: (cocktailId: string) => void;
   setSlideShowInterval: (interval: number) => void;
   setKenBurnsEnabled: (enabled: boolean) => void;
   setFilmGrainEnabled: (enabled: boolean) => void;

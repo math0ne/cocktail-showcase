@@ -2,15 +2,14 @@
 
 import {
   Box,
-  Image,
   Text,
   Badge,
   VStack,
   Wrap,
   WrapItem,
-  useColorModeValue,
 } from '@chakra-ui/react';
 import { useStore } from '@/store/useStore';
+import { CocktailImage } from './CocktailImage';
 import type { CocktailMatch } from '@/types';
 
 interface CocktailCardProps {
@@ -28,47 +27,55 @@ export function CocktailCard({ match, onClick, showReadyHighlight = true }: Cock
   const isTried = triedCocktails.includes(cocktail.id);
   const isHearted = heartedCocktails.includes(cocktail.id);
 
-  const bgCard = useColorModeValue('white', 'gray.800');
-  const borderDefault = useColorModeValue('gray.200', 'gray.700');
-  const borderMatch = useColorModeValue('green.200', 'green.700');
-  const textMuted = useColorModeValue('gray.600', 'gray.400');
-
   // Only show green border if highlight is enabled and it's a full match
   const showHighlight = showReadyHighlight && isFullMatch;
 
   return (
     <Box
-      borderRadius="xl"
+      borderRadius="2xl"
       overflow="hidden"
-      bg={bgCard}
-      boxShadow="sm"
+      bg="#121214"
       border="1px solid"
-      borderColor={showHighlight ? borderMatch : borderDefault}
-      transition="transform 0.2s, box-shadow 0.2s"
-      _hover={{ transform: 'translateY(-2px)', boxShadow: 'md' }}
+      borderColor={showHighlight ? 'green.600' : 'whiteAlpha.100'}
+      transition="all 0.2s ease"
+      _hover={{
+        transform: 'translateY(-4px)',
+        boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
+      }}
       cursor="pointer"
       onClick={onClick}
     >
-      {/* Image container */}
+      {/* Image container with gradient overlay */}
       <Box position="relative" overflow="hidden">
-        <Image
-          src={cocktail.thumbnail}
-          alt={cocktail.name}
-          w="100%"
+        <CocktailImage
+          cocktailId={cocktail.id}
+          thumbnailUrl={cocktail.thumbnail}
+          name={cocktail.name}
           aspectRatio="1"
-          objectFit="cover"
+          borderRadius="0"
+        />
+        {/* Gradient overlay at bottom */}
+        <Box
+          position="absolute"
+          bottom={0}
+          left={0}
+          right={0}
+          h="50%"
+          bgGradient="linear(to-t, #121214, transparent)"
+          pointerEvents="none"
         />
         {/* Status badge - top right */}
         <Badge
           position="absolute"
           top={2}
           right={2}
-          bg="rgba(0,0,0,0.6)"
+          bg={isFullMatch ? '#10b981' : '#f59e0b'}
           color="white"
           fontSize="xs"
-          px={2}
+          px={2.5}
           py={1}
           borderRadius="md"
+          fontWeight="semibold"
         >
           {isFullMatch
             ? 'Ready'
@@ -77,65 +84,60 @@ export function CocktailCard({ match, onClick, showReadyHighlight = true }: Cock
       </Box>
 
       <VStack p={4} align="stretch" spacing={2}>
-        <Text fontWeight="semibold" fontSize="md" noOfLines={1}>
+        <Text fontWeight="semibold" fontSize="md" noOfLines={1} color="gray.100">
           {cocktail.name}
         </Text>
 
-        <Wrap spacing={1} align="center">
+        <Wrap spacing={1.5} align="center">
           {isTried && (
             <WrapItem>
-              <Badge colorScheme="green" variant="subtle" fontSize="xs">
+              <Badge bg="#10b981" color="white" fontSize="xs" borderRadius="md" fontWeight="semibold" px={2} py={0.5}>
                 Tried
               </Badge>
             </WrapItem>
           )}
           {isHearted && (
             <WrapItem>
-              <Badge colorScheme="red" variant="subtle" fontSize="xs">
+              <Badge bg="#ef4444" color="white" fontSize="xs" borderRadius="md" fontWeight="semibold" px={2} py={0.5}>
                 Liked
               </Badge>
             </WrapItem>
           )}
           <WrapItem>
-            <Badge colorScheme="purple" variant="subtle" fontSize="xs">
+            <Badge bg="#8b5cf6" color="white" fontSize="xs" borderRadius="md" fontWeight="semibold" px={2} py={0.5}>
               {cocktail.category}
             </Badge>
           </WrapItem>
           {cocktail.tags.map((tag) => (
             <WrapItem key={tag}>
-              <Badge colorScheme="teal" variant="subtle" fontSize="xs">
+              <Badge bg="#0ea5e9" color="white" fontSize="xs" borderRadius="md" fontWeight="semibold" px={2} py={0.5}>
                 {tag}
               </Badge>
             </WrapItem>
           ))}
           <WrapItem>
-            <Text fontSize="xs" color={textMuted}>{cocktail.glass}</Text>
+            <Badge bg="#6366f1" color="white" fontSize="xs" borderRadius="md" fontWeight="semibold" px={2} py={0.5}>
+              {cocktail.glass}
+            </Badge>
           </WrapItem>
         </Wrap>
 
-        <Box>
-          <Text fontSize="xs" fontWeight="medium" mb={1} color={textMuted}>
-            Ingredients:
-          </Text>
-          <Wrap spacing={1}>
-            {cocktail.ingredients.map((ing, index) => {
-              const isMissing = missingIngredients
-                .map((m) => m.toLowerCase())
-                .includes(ing.name.toLowerCase());
-              return (
-                <WrapItem key={`${ing.name}-${index}`}>
-                  <Badge
-                    variant="subtle"
-                    colorScheme={isMissing ? 'red' : 'green'}
-                    fontSize="xs"
-                  >
-                    {ing.name}
-                  </Badge>
-                </WrapItem>
-              );
-            })}
-          </Wrap>
-        </Box>
+        <Text fontSize="xs" color="gray.400" noOfLines={2}>
+          {cocktail.ingredients.map((ing, index) => {
+            const isMissing = missingIngredients
+              .map((m) => m.toLowerCase())
+              .includes(ing.name.toLowerCase());
+            return (
+              <Text
+                key={`${ing.name}-${index}`}
+                as="span"
+                color={isMissing ? '#ef4444' : 'gray.400'}
+              >
+                {ing.name}{index < cocktail.ingredients.length - 1 ? ', ' : ''}
+              </Text>
+            );
+          })}
+        </Text>
       </VStack>
     </Box>
   );

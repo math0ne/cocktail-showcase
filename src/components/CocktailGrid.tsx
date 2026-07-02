@@ -17,7 +17,6 @@ import {
   InputGroup,
   InputLeftElement,
   Divider,
-  useColorModeValue,
   useDisclosure,
 } from '@chakra-ui/react';
 import { SearchIcon } from '@chakra-ui/icons';
@@ -29,7 +28,7 @@ import type { CocktailMatch } from '@/types';
 import Link from 'next/link';
 import { fuzzyMatch } from '@/lib/fuzzyMatch';
 
-type SortOption = 'match' | 'name' | 'category' | 'glass' | 'ingredients';
+type SortOption = 'match' | 'name' | 'category' | 'glass' | 'ingredients' | 'liked' | 'tried';
 type ViewMode = 'ready' | 'matches' | 'all' | 'tried' | 'liked';
 
 export function CocktailGrid() {
@@ -47,9 +46,6 @@ export function CocktailGrid() {
     setSelectedMatch(match);
     onOpen();
   };
-
-  const textMuted = useColorModeValue('gray.500', 'gray.400');
-  const bgSelect = useColorModeValue('white', 'gray.700');
 
   const filteredAndSorted = useMemo(() => {
     let result = [...matches];
@@ -93,6 +89,20 @@ export function CocktailGrid() {
         if (countCompare !== 0) return countCompare;
         return a.cocktail.name.localeCompare(b.cocktail.name);
       });
+    } else if (sortBy === 'liked') {
+      result.sort((a, b) => {
+        const aLiked = heartedCocktails.includes(a.cocktail.id) ? 0 : 1;
+        const bLiked = heartedCocktails.includes(b.cocktail.id) ? 0 : 1;
+        if (aLiked !== bLiked) return aLiked - bLiked;
+        return a.cocktail.name.localeCompare(b.cocktail.name);
+      });
+    } else if (sortBy === 'tried') {
+      result.sort((a, b) => {
+        const aTried = triedCocktails.includes(a.cocktail.id) ? 0 : 1;
+        const bTried = triedCocktails.includes(b.cocktail.id) ? 0 : 1;
+        if (aTried !== bTried) return aTried - bTried;
+        return a.cocktail.name.localeCompare(b.cocktail.name);
+      });
     }
 
     return result;
@@ -123,8 +133,8 @@ export function CocktailGrid() {
     return (
       <Center py={12}>
         <VStack spacing={4}>
-          <Spinner size="xl" color="teal.500" />
-          <Text color={textMuted}>Loading cocktails...</Text>
+          <Spinner size="xl" color="purple.500" thickness="3px" />
+          <Text color="gray.400">Loading cocktails...</Text>
         </VStack>
       </Center>
     );
@@ -133,7 +143,7 @@ export function CocktailGrid() {
   if (error) {
     return (
       <Center py={12}>
-        <Text color="red.500">Error: {error.message}</Text>
+        <Text color="red.400">Error: {error.message}</Text>
       </Center>
     );
   }
@@ -142,21 +152,30 @@ export function CocktailGrid() {
     return (
       <Center py={12}>
         <VStack spacing={4}>
-          <Text color={textMuted} textAlign="center">
+          <Text color="gray.400" textAlign="center">
             Add some ingredients to see what cocktails you can make,
             <br />
             or browse all cocktails.
           </Text>
           <HStack spacing={4}>
             <Link href="/bar" passHref legacyBehavior>
-              <Button as="a" colorScheme="teal">
+              <Button
+                as="a"
+                bgGradient="linear(to-r, purple.600, purple.500)"
+                color="white"
+                _hover={{ bgGradient: 'linear(to-r, purple.500, purple.400)' }}
+                borderRadius="xl"
+              >
                 Add Ingredients
               </Button>
             </Link>
             <Button
               variant="outline"
-              colorScheme="teal"
+              borderColor="whiteAlpha.200"
+              color="gray.100"
+              _hover={{ bg: 'whiteAlpha.100' }}
               onClick={() => setViewMode('all')}
+              borderRadius="xl"
             >
               Browse All
             </Button>
@@ -169,7 +188,7 @@ export function CocktailGrid() {
   if (matches.length === 0) {
     return (
       <Center py={12}>
-        <Text color={textMuted}>
+        <Text color="gray.400">
           No cocktails found. Try adding more ingredients.
         </Text>
       </Center>
@@ -182,68 +201,99 @@ export function CocktailGrid() {
       <VStack spacing={3} mb={6} align="stretch">
         {/* Row 1: Toggle (mobile: full width, desktop: inline with search/sort) */}
         <Flex align="center" gap={4} direction={{ base: 'column', md: 'row' }}>
-          {/* Toggle - Left */}
-          <ButtonGroup isAttached variant="outline" size="sm" w={{ base: '100%', md: 'auto' }} flexWrap="wrap">
-            <Button
-              colorScheme="teal"
-              variant={viewMode === 'ready' ? 'solid' : 'outline'}
-              onClick={() => setViewMode('ready')}
-              flex={{ base: 1, md: 'none' }}
-            >
-              Ready ({readyCount})
-            </Button>
-            <Button
-              colorScheme="teal"
-              variant={viewMode === 'tried' ? 'solid' : 'outline'}
-              onClick={() => setViewMode('tried')}
-              flex={{ base: 1, md: 'none' }}
-            >
-              Tried ({triedCocktails.length})
-            </Button>
-            <Button
-              colorScheme="teal"
-              variant={viewMode === 'liked' ? 'solid' : 'outline'}
-              onClick={() => setViewMode('liked')}
-              flex={{ base: 1, md: 'none' }}
-            >
-              Liked ({heartedCocktails.length})
-            </Button>
-            <Button
-              colorScheme="teal"
-              variant={viewMode === 'matches' ? 'solid' : 'outline'}
-              onClick={() => setViewMode('matches')}
-              flex={{ base: 1, md: 'none' }}
-            >
-              Matches ({matchedCount})
-            </Button>
-            <Button
-              colorScheme="teal"
-              variant={viewMode === 'all' ? 'solid' : 'outline'}
-              onClick={() => setViewMode('all')}
-              flex={{ base: 1, md: 'none' }}
-            >
-              All {totalCount > 0 ? `(${totalCount})` : ''}
-            </Button>
-          </ButtonGroup>
+          {/* Toggle - Left - Pill-shaped in gray container */}
+          <Box
+            bg="gray.800"
+            p={1}
+            borderRadius="xl"
+            w={{ base: '100%', md: 'auto' }}
+            h={{ base: 'auto', md: '40px' }}
+            display="flex"
+            alignItems="center"
+          >
+            <ButtonGroup isAttached variant="ghost" size="sm" w="100%" flexWrap="wrap">
+              <Button
+                bg={viewMode === 'ready' ? 'purple.600' : 'transparent'}
+                color={viewMode === 'ready' ? 'white' : 'gray.400'}
+                _hover={{ bg: viewMode === 'ready' ? 'purple.500' : 'whiteAlpha.100' }}
+                onClick={() => setViewMode('ready')}
+                flex={{ base: 1, md: 'none' }}
+                borderRadius="lg"
+              >
+                Ready ({readyCount})
+              </Button>
+              <Button
+                bg={viewMode === 'tried' ? 'purple.600' : 'transparent'}
+                color={viewMode === 'tried' ? 'white' : 'gray.400'}
+                _hover={{ bg: viewMode === 'tried' ? 'purple.500' : 'whiteAlpha.100' }}
+                onClick={() => setViewMode('tried')}
+                flex={{ base: 1, md: 'none' }}
+                borderRadius="lg"
+              >
+                Tried ({triedCocktails.length})
+              </Button>
+              <Button
+                bg={viewMode === 'liked' ? 'purple.600' : 'transparent'}
+                color={viewMode === 'liked' ? 'white' : 'gray.400'}
+                _hover={{ bg: viewMode === 'liked' ? 'purple.500' : 'whiteAlpha.100' }}
+                onClick={() => setViewMode('liked')}
+                flex={{ base: 1, md: 'none' }}
+                borderRadius="lg"
+              >
+                Liked ({heartedCocktails.length})
+              </Button>
+              <Button
+                bg={viewMode === 'matches' ? 'purple.600' : 'transparent'}
+                color={viewMode === 'matches' ? 'white' : 'gray.400'}
+                _hover={{ bg: viewMode === 'matches' ? 'purple.500' : 'whiteAlpha.100' }}
+                onClick={() => setViewMode('matches')}
+                flex={{ base: 1, md: 'none' }}
+                borderRadius="lg"
+              >
+                Matches ({matchedCount})
+              </Button>
+              <Button
+                bg={viewMode === 'all' ? 'purple.600' : 'transparent'}
+                color={viewMode === 'all' ? 'white' : 'gray.400'}
+                _hover={{ bg: viewMode === 'all' ? 'purple.500' : 'whiteAlpha.100' }}
+                onClick={() => setViewMode('all')}
+                flex={{ base: 1, md: 'none' }}
+                borderRadius="lg"
+              >
+                All {totalCount > 0 ? `(${totalCount})` : ''}
+              </Button>
+            </ButtonGroup>
+          </Box>
 
           {/* Search + Sort Row (mobile: own row, desktop: same row) */}
           <Flex align="center" gap={3} flex={1} w={{ base: '100%', md: 'auto' }}>
             {/* Search */}
-            <InputGroup size="sm" maxW={{ base: '100%', md: '300px' }} flex={1}>
-              <InputLeftElement pointerEvents="none">
-                <SearchIcon color="gray.400" />
+            <InputGroup maxW={{ base: '100%', md: '300px' }} flex={1} h="40px">
+              <InputLeftElement pointerEvents="none" h="40px">
+                <SearchIcon color="gray.500" />
               </InputLeftElement>
               <Input
                 placeholder="Search cocktails, ingredients..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                bg={bgSelect}
+                bg="gray.800"
+                border="none"
+                borderRadius="xl"
+                color="gray.400"
+                h="40px"
+                fontSize="sm"
+                fontWeight="semibold"
+                _placeholder={{ color: 'gray.400' }}
+                _focus={{
+                  bg: 'gray.800',
+                  boxShadow: '0 0 0 1px var(--chakra-colors-purple-500)',
+                }}
               />
             </InputGroup>
 
             {/* Results count */}
             {search && (
-              <Text fontSize="sm" color={textMuted} whiteSpace="nowrap" display={{ base: 'none', sm: 'block' }}>
+              <Text fontSize="sm" fontWeight="medium" color="gray.400" whiteSpace="nowrap" display={{ base: 'none', sm: 'block' }}>
                 Found {filteredAndSorted.length}
               </Text>
             )}
@@ -252,13 +302,23 @@ export function CocktailGrid() {
             <Select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as SortOption)}
-              w={{ base: '130px', md: '140px' }}
-              size="sm"
-              bg={bgSelect}
+              w={{ base: '130px', md: '150px' }}
+              h="40px"
+              bg="gray.800"
+              border="none"
+              borderRadius="xl"
+              color="gray.400"
+              fontSize="sm"
+              fontWeight="semibold"
               flexShrink={0}
+              _focus={{
+                boxShadow: '0 0 0 1px var(--chakra-colors-purple-500)',
+              }}
             >
               <option value="match">Best Match</option>
               <option value="name">Name (A-Z)</option>
+              <option value="liked">Liked First</option>
+              <option value="tried">Tried First</option>
               <option value="category">Category</option>
               <option value="glass">Glass Type</option>
               <option value="ingredients">Ingredients</option>
@@ -272,11 +332,11 @@ export function CocktailGrid() {
           {groupedResults.map((group) => (
             <Box key={group.label}>
               <HStack mb={3}>
-                <Text fontSize="sm" fontWeight="semibold" color={textMuted} whiteSpace="nowrap">
+                <Text fontSize="sm" fontWeight="semibold" color="gray.400" whiteSpace="nowrap">
                   {group.label}
                 </Text>
-                <Divider />
-                <Text fontSize="xs" color={textMuted} whiteSpace="nowrap">
+                <Divider borderColor="whiteAlpha.100" />
+                <Text fontSize="xs" color="gray.500" whiteSpace="nowrap">
                   {group.items.length}
                 </Text>
               </HStack>
