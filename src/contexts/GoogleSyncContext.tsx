@@ -55,10 +55,8 @@ export function GoogleSyncProvider({ children }: Props) {
   const cocktailNotes = useStore((state) => state.cocktailNotes);
   const slideShowSettings = useStore((state) => state.slideShowSettings);
 
-  // Build current sync data
-  const buildSyncData = useCallback((): SyncData => ({
-    version: 1,
-    lastSyncedAt: new Date().toISOString(),
+  // Build data for comparison (without timestamp)
+  const buildCompareData = useCallback(() => ({
     myIngredients,
     shoppingList,
     customCocktails,
@@ -66,8 +64,15 @@ export function GoogleSyncProvider({ children }: Props) {
     heartedCocktails,
     cocktailNotes,
     slideShowSettings,
-    imageRefs: {}, // TODO: implement image sync
   }), [myIngredients, shoppingList, customCocktails, triedCocktails, heartedCocktails, cocktailNotes, slideShowSettings]);
+
+  // Build full sync data (with timestamp)
+  const buildSyncData = useCallback((): SyncData => ({
+    version: 1,
+    lastSyncedAt: new Date().toISOString(),
+    ...buildCompareData(),
+    imageRefs: {}, // TODO: implement image sync
+  }), [buildCompareData]);
 
   // Apply sync data to store
   const applySyncData = useCallback((data: SyncData) => {
@@ -87,11 +92,11 @@ export function GoogleSyncProvider({ children }: Props) {
     const token = getStoredToken();
     if (!token) return;
 
-    const currentData = buildSyncData();
-    const dataString = JSON.stringify(currentData);
+    const compareData = buildCompareData();
+    const compareString = JSON.stringify(compareData);
 
     // Skip if data hasn't changed
-    if (dataString === lastSyncDataRef.current) {
+    if (compareString === lastSyncDataRef.current) {
       setHasPendingChanges(false);
       return;
     }
@@ -101,8 +106,9 @@ export function GoogleSyncProvider({ children }: Props) {
     setError(null);
 
     try {
-      await saveToDrive(token.accessToken, currentData);
-      lastSyncDataRef.current = dataString;
+      const syncData = buildSyncData();
+      await saveToDrive(token.accessToken, syncData);
+      lastSyncDataRef.current = compareString;
       setLastSyncedAt(new Date());
     } catch (err) {
       console.error('Sync failed:', err);
@@ -110,10 +116,16 @@ export function GoogleSyncProvider({ children }: Props) {
     } finally {
       setIsSyncing(false);
     }
-  }, [buildSyncData]);
+  }, [buildCompareData, buildSyncData]);
 
   // Debounced sync - waits for changes to settle
   const debouncedSync = useCallback(() => {
+    // Check if data actually changed before triggering sync
+    const compareString = JSON.stringify(buildCompareData());
+    if (compareString === lastSyncDataRef.current) {
+      return; // No actual changes
+    }
+
     setHasPendingChanges(true);
     if (syncTimeoutRef.current) {
       clearTimeout(syncTimeoutRef.current);
@@ -121,7 +133,7 @@ export function GoogleSyncProvider({ children }: Props) {
     syncTimeoutRef.current = setTimeout(() => {
       syncToDrive();
     }, 4000); // Wait 4 seconds after last change
-  }, [syncToDrive]);
+  }, [buildCompareData, syncToDrive]);
 
   // Watch for store changes and trigger sync
   useEffect(() => {
@@ -142,7 +154,16 @@ export function GoogleSyncProvider({ children }: Props) {
             const data = await loadFromDrive(token.accessToken);
             if (data) {
               applySyncData(data);
-              lastSyncDataRef.current = JSON.stringify(data);
+              // Store compare data (without timestamp/version) for change detection
+              lastSyncDataRef.current = JSON.stringify({
+                myIngredients: data.myIngredients,
+                shoppingList: data.shoppingList,
+                customCocktails: data.customCocktails,
+                triedCocktails: data.triedCocktails,
+                heartedCocktails: data.heartedCocktails,
+                cocktailNotes: data.cocktailNotes,
+                slideShowSettings: data.slideShowSettings,
+              });
               setLastSyncedAt(new Date(data.lastSyncedAt));
             }
           } catch (err) {
@@ -171,7 +192,16 @@ export function GoogleSyncProvider({ children }: Props) {
         if (driveData) {
           // Ask user what to do - for now, we'll merge (Drive data takes precedence)
           applySyncData(driveData);
-          lastSyncDataRef.current = JSON.stringify(driveData);
+          // Store compare data (without timestamp/version) for change detection
+          lastSyncDataRef.current = JSON.stringify({
+            myIngredients: driveData.myIngredients,
+            shoppingList: driveData.shoppingList,
+            customCocktails: driveData.customCocktails,
+            triedCocktails: driveData.triedCocktails,
+            heartedCocktails: driveData.heartedCocktails,
+            cocktailNotes: driveData.cocktailNotes,
+            slideShowSettings: driveData.slideShowSettings,
+          });
           setLastSyncedAt(new Date(driveData.lastSyncedAt));
         } else {
           // No existing data, upload current state
