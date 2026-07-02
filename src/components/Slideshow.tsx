@@ -195,7 +195,11 @@ function shuffleArray<T>(array: T[]): T[] {
   return shuffled;
 }
 
-export function Slideshow() {
+interface SlideshowProps {
+  onClose?: () => void;
+}
+
+export function Slideshow({ onClose }: SlideshowProps) {
   const { fullMatches, loading } = useCocktails();
   const slideShowSettings = useStore((state) => state.slideShowSettings);
   const setSlideShowInterval = useStore((state) => state.setSlideShowInterval);
@@ -328,7 +332,7 @@ export function Slideshow() {
     setShowFullscreenPrompt(false);
   }, [isPWA]);
 
-  // Exit fullscreen and navigate back
+  // Exit fullscreen and close/navigate back
   const handleExit = useCallback(async () => {
     try {
       if (document.fullscreenElement) {
@@ -337,8 +341,12 @@ export function Slideshow() {
     } catch (err) {
       console.log('Exit fullscreen error:', err);
     }
-    window.location.href = '/';
-  }, []);
+    if (onClose) {
+      onClose();
+    } else {
+      window.location.href = '/';
+    }
+  }, [onClose]);
 
   // Wake Lock to prevent device sleep
   useEffect(() => {

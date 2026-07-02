@@ -14,7 +14,6 @@ import {
   Icon,
   Badge,
 } from '@chakra-ui/react';
-import Link from 'next/link';
 import { CocktailGrid } from '@/components/CocktailGrid';
 import { IngredientPicker } from '@/components/IngredientPicker';
 import { IngredientList } from '@/components/IngredientList';
@@ -22,6 +21,7 @@ import { FreshIngredients } from '@/components/FreshIngredients';
 import { MyShoppingList } from '@/components/MyShoppingList';
 import { DataExport } from '@/components/DataExport';
 import { GoogleSyncStatus } from '@/components/GoogleSyncStatus';
+import { Slideshow } from '@/components/Slideshow';
 import { useStore } from '@/store/useStore';
 import { useCocktails } from '@/hooks/useCocktails';
 
@@ -39,6 +39,7 @@ type ViewMode = 'bar' | 'drinks';
 
 export default function HomePage() {
   const [view, setView] = useState<ViewMode>('drinks');
+  const [showSlideshow, setShowSlideshow] = useState(false);
   const myIngredients = useStore((state) => state.myIngredients);
   const { fullMatches, matches } = useCocktails();
 
@@ -163,22 +164,20 @@ export default function HomePage() {
               </ButtonGroup>
             </Box>
             {fullMatches.length > 0 && (
-              <Link href="/slideshow" passHref legacyBehavior>
-                <Button
-                  as="a"
-                  size="sm"
-                  h="32px"
-                  px={3}
-                  display={{ base: 'none', md: 'inline-flex' }}
-                  bgGradient="linear(to-r, purple.600, purple.500)"
-                  color="white"
-                  _hover={{ bgGradient: 'linear(to-r, purple.500, purple.400)' }}
-                  borderRadius="lg"
-                  fontWeight="medium"
-                >
-                  Slideshow
-                </Button>
-              </Link>
+              <Button
+                size="sm"
+                h="32px"
+                px={3}
+                display={{ base: 'none', md: 'inline-flex' }}
+                bgGradient="linear(to-r, purple.600, purple.500)"
+                color="white"
+                _hover={{ bgGradient: 'linear(to-r, purple.500, purple.400)' }}
+                borderRadius="lg"
+                fontWeight="medium"
+                onClick={() => setShowSlideshow(true)}
+              >
+                Slideshow
+              </Button>
             )}
             <GoogleSyncStatus />
           </HStack>
@@ -298,6 +297,17 @@ export default function HomePage() {
         </Container>
       )}
 
+      {/* Slideshow Overlay */}
+      {showSlideshow && (
+        <Box
+          position="fixed"
+          inset={0}
+          zIndex={9999}
+          bg="black"
+        >
+          <Slideshow onClose={() => setShowSlideshow(false)} />
+        </Box>
+      )}
     </Box>
   );
 }
