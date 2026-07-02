@@ -17,6 +17,7 @@ interface GoogleSyncContextType {
   isSignedIn: boolean;
   isLoading: boolean;
   isSyncing: boolean;
+  hasPendingChanges: boolean;
   lastSyncedAt: Date | null;
   error: string | null;
   signIn: () => void;
@@ -39,6 +40,7 @@ export function GoogleSyncProvider({ children }: Props) {
   const [isSignedIn, setIsSignedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [hasPendingChanges, setHasPendingChanges] = useState(false);
   const [lastSyncedAt, setLastSyncedAt] = useState<Date | null>(null);
   const [error, setError] = useState<string | null>(null);
   const syncTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -89,9 +91,13 @@ export function GoogleSyncProvider({ children }: Props) {
     const dataString = JSON.stringify(currentData);
 
     // Skip if data hasn't changed
-    if (dataString === lastSyncDataRef.current) return;
+    if (dataString === lastSyncDataRef.current) {
+      setHasPendingChanges(false);
+      return;
+    }
 
     setIsSyncing(true);
+    setHasPendingChanges(false);
     setError(null);
 
     try {
@@ -108,12 +114,13 @@ export function GoogleSyncProvider({ children }: Props) {
 
   // Debounced sync - waits for changes to settle
   const debouncedSync = useCallback(() => {
+    setHasPendingChanges(true);
     if (syncTimeoutRef.current) {
       clearTimeout(syncTimeoutRef.current);
     }
     syncTimeoutRef.current = setTimeout(() => {
       syncToDrive();
-    }, 2000); // Wait 2 seconds after last change
+    }, 4000); // Wait 4 seconds after last change
   }, [syncToDrive]);
 
   // Watch for store changes and trigger sync
@@ -204,6 +211,7 @@ export function GoogleSyncProvider({ children }: Props) {
         isSignedIn,
         isLoading,
         isSyncing,
+        hasPendingChanges,
         lastSyncedAt,
         error,
         signIn,

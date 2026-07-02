@@ -60,6 +60,7 @@ export function GoogleSyncStatus() {
     isSignedIn,
     isLoading,
     isSyncing,
+    hasPendingChanges,
     lastSyncedAt,
     error,
     signIn,
@@ -103,6 +104,22 @@ export function GoogleSyncStatus() {
     return lastSyncedAt.toLocaleDateString();
   };
 
+  const getStatusText = () => {
+    if (isSyncing) return 'Saving...';
+    if (hasPendingChanges) return 'Pending';
+    if (error) return 'Error';
+    return 'Synced';
+  };
+
+  const getStatusColor = () => {
+    if (error) return { bg: 'red.900', color: 'red.300', hover: 'red.800' };
+    if (isSyncing) return { bg: 'purple.900', color: 'purple.300', hover: 'purple.800' };
+    if (hasPendingChanges) return { bg: 'orange.900', color: 'orange.300', hover: 'orange.800' };
+    return { bg: 'whiteAlpha.100', color: 'gray.300', hover: 'whiteAlpha.200' };
+  };
+
+  const statusColor = getStatusColor();
+
   return (
     <Menu>
       <Tooltip label={error || `Last synced: ${formatLastSync()}`} placement="bottom">
@@ -111,9 +128,9 @@ export function GoogleSyncStatus() {
           size="sm"
           h="32px"
           px={3}
-          bg={error ? 'red.900' : 'whiteAlpha.100'}
-          color={error ? 'red.300' : 'gray.300'}
-          _hover={{ bg: error ? 'red.800' : 'whiteAlpha.200' }}
+          bg={statusColor.bg}
+          color={statusColor.color}
+          _hover={{ bg: statusColor.hover }}
           borderRadius="lg"
           fontWeight="medium"
         >
@@ -122,11 +139,13 @@ export function GoogleSyncStatus() {
               <Spinner size="xs" />
             ) : error ? (
               <WarningIcon boxSize={3} />
+            ) : hasPendingChanges ? (
+              <Box w="6px" h="6px" borderRadius="full" bg="orange.400" />
             ) : (
-              <CloudSyncIcon boxSize={4} />
+              <CheckIcon boxSize={3} color="green.400" />
             )}
             <Text display={{ base: 'none', sm: 'block' }}>
-              {isSyncing ? 'Syncing...' : error ? 'Error' : 'Synced'}
+              {getStatusText()}
             </Text>
           </HStack>
         </MenuButton>
