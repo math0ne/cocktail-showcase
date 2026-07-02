@@ -1,0 +1,217 @@
+'use client';
+
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
+import { useGoogleLogin, googleLogout } from '@react-oauth/google';
+import { useStore } from '@/store/useStore';
+import {
+  getStoredToken,
+  storeToken,
+  clearToken,
+  loadFromDrive,
+  saveToDrive,
+  testConnection,
+  type SyncData,
+} from '@/lib/googleDrive';
+
+interface GoogleSyncContextType {
+  isSignedIn: boolean;
+  isLoading: boolean;
+  isSyncing: boolean;
+  lastSyncedAt: Date | null;
+  error: string | null;
+  signIn: () => void;
+  signOut: () => void;
+  syncNow: () => Promise<void>;
+}
+
+const GoogleSyncContext = createContext<GoogleSyncContextType | null>(null);
+
+export function useGoogleSync() {
+  const context = useContext(GoogleSyncContext);
+  return context;
+}
+
+interface Props {
+  children: React.ReactNode;
+}
+
+export function GoogleSyncProvider({ children }: Props) {
+  const [isSignedIn, setIsSignedIn] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [lastSyncedAt, setLastSyncedAt] = useState<Date | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const syncTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const lastSyncDataRef = useRef<string>('');
+
+  // Get current state from store
+  const myIngredients = useStore((state) => state.myIngredients);
+  const shoppingList = useStore((state) => state.shoppingList);
+  const customCocktails = useStore((state) => state.customCocktails);
+  const triedCocktails = useStore((state) => state.triedCocktails);
+  const heartedCocktails = useStore((state) => state.heartedCocktails);
+  const cocktailNotes = useStore((state) => state.cocktailNotes);
+  const slideShowSettings = useStore((state) => state.slideShowSettings);
+
+  // Build current sync data
+  const buildSyncData = useCallback((): SyncData => ({
+    version: 1,
+    lastSyncedAt: new Date().toISOString(),
+    myIngredients,
+    shoppingList,
+    customCocktails,
+    triedCocktails,
+    heartedCocktails,
+    cocktailNotes,
+    slideShowSettings,
+    imageRefs: {}, // TODO: implement image sync
+  }), [myIngredients, shoppingList, customCocktails, triedCocktails, heartedCocktails, cocktailNotes, slideShowSettings]);
+
+  // Apply sync data to store
+  const applySyncData = useCallback((data: SyncData) => {
+    useStore.setState({
+      myIngredients: data.myIngredients || [],
+      shoppingList: data.shoppingList || [],
+      customCocktails: data.customCocktails || [],
+      triedCocktails: data.triedCocktails || [],
+      heartedCocktails: data.heartedCocktails || [],
+      cocktailNotes: data.cocktailNotes || {},
+      ...(data.slideShowSettings && { slideShowSettings: data.slideShowSettings }),
+    });
+  }, []);
+
+  // Sync to Drive
+  const syncToDrive = useCallback(async () => {
+    const token = getStoredToken();
+    if (!token) return;
+
+    const currentData = buildSyncData();
+    const dataString = JSON.stringify(currentData);
+
+    // Skip if data hasn't changed
+    if (dataString === lastSyncDataRef.current) return;
+
+    setIsSyncing(true);
+    setError(null);
+
+    try {
+      await saveToDrive(token.accessToken, currentData);
+      lastSyncDataRef.current = dataString;
+      setLastSyncedAt(new Date());
+    } catch (err) {
+      console.error('Sync failed:', err);
+      setError('Failed to sync to Google Drive');
+    } finally {
+      setIsSyncing(false);
+    }
+  }, [buildSyncData]);
+
+  // Debounced sync - waits for changes to settle
+  const debouncedSync = useCallback(() => {
+    if (syncTimeoutRef.current) {
+      clearTimeout(syncTimeoutRef.current);
+    }
+    syncTimeoutRef.current = setTimeout(() => {
+      syncToDrive();
+    }, 2000); // Wait 2 seconds after last change
+  }, [syncToDrive]);
+
+  // Watch for store changes and trigger sync
+  useEffect(() => {
+    if (!isSignedIn) return;
+    debouncedSync();
+  }, [myIngredients, shoppingList, customCocktails, triedCocktails, heartedCocktails, cocktailNotes, slideShowSettings, isSignedIn, debouncedSync]);
+
+  // Check for existing token on mount
+  useEffect(() => {
+    const checkToken = async () => {
+      const token = getStoredToken();
+      if (token) {
+        const valid = await testConnection(token.accessToken);
+        if (valid) {
+          setIsSignedIn(true);
+          // Load initial data from Drive
+          try {
+            const data = await loadFromDrive(token.accessToken);
+            if (data) {
+              applySyncData(data);
+              lastSyncDataRef.current = JSON.stringify(data);
+              setLastSyncedAt(new Date(data.lastSyncedAt));
+            }
+          } catch (err) {
+            console.error('Failed to load initial data:', err);
+          }
+        } else {
+          clearToken();
+        }
+      }
+      setIsLoading(false);
+    };
+
+    checkToken();
+  }, [applySyncData]);
+
+  // Google login hook
+  const login = useGoogleLogin({
+    onSuccess: async (response) => {
+      storeToken(response.access_token, response.expires_in);
+      setIsSignedIn(true);
+      setError(null);
+
+      // Check for existing data on Drive
+      try {
+        const driveData = await loadFromDrive(response.access_token);
+        if (driveData) {
+          // Ask user what to do - for now, we'll merge (Drive data takes precedence)
+          applySyncData(driveData);
+          lastSyncDataRef.current = JSON.stringify(driveData);
+          setLastSyncedAt(new Date(driveData.lastSyncedAt));
+        } else {
+          // No existing data, upload current state
+          await syncToDrive();
+        }
+      } catch (err) {
+        console.error('Failed to handle sign in:', err);
+        setError('Failed to sync after sign in');
+      }
+    },
+    onError: (error) => {
+      console.error('Login failed:', error);
+      setError('Failed to sign in with Google');
+    },
+    scope: 'https://www.googleapis.com/auth/drive.appdata',
+  });
+
+  const signIn = useCallback(() => {
+    login();
+  }, [login]);
+
+  const signOut = useCallback(() => {
+    googleLogout();
+    clearToken();
+    setIsSignedIn(false);
+    setLastSyncedAt(null);
+    lastSyncDataRef.current = '';
+  }, []);
+
+  const syncNow = useCallback(async () => {
+    await syncToDrive();
+  }, [syncToDrive]);
+
+  return (
+    <GoogleSyncContext.Provider
+      value={{
+        isSignedIn,
+        isLoading,
+        isSyncing,
+        lastSyncedAt,
+        error,
+        signIn,
+        signOut,
+        syncNow,
+      }}
+    >
+      {children}
+    </GoogleSyncContext.Provider>
+  );
+}

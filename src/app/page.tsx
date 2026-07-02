@@ -21,6 +21,7 @@ import { IngredientList } from '@/components/IngredientList';
 import { FreshIngredients } from '@/components/FreshIngredients';
 import { MyShoppingList } from '@/components/MyShoppingList';
 import { DataExport } from '@/components/DataExport';
+import { GoogleSyncStatus } from '@/components/GoogleSyncStatus';
 import { useStore } from '@/store/useStore';
 import { useCocktails } from '@/hooks/useCocktails';
 
@@ -179,6 +180,7 @@ export default function HomePage() {
                 </Button>
               </Link>
             )}
+            <GoogleSyncStatus />
           </HStack>
         </Flex>
       </Box>

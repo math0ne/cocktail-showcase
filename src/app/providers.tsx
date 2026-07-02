@@ -2,6 +2,8 @@
 
 import { CacheProvider } from '@chakra-ui/next-js';
 import { ChakraProvider, extendTheme, type ThemeConfig } from '@chakra-ui/react';
+import { GoogleOAuthProvider } from '@react-oauth/google';
+import { GoogleSyncProvider } from '@/contexts/GoogleSyncContext';
 
 const config: ThemeConfig = {
   initialColorMode: 'dark',
@@ -158,10 +160,20 @@ const theme = extendTheme({
   },
 });
 
+const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '';
+
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <CacheProvider>
-      <ChakraProvider theme={theme}>{children}</ChakraProvider>
+      <ChakraProvider theme={theme}>
+        {GOOGLE_CLIENT_ID ? (
+          <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+            <GoogleSyncProvider>{children}</GoogleSyncProvider>
+          </GoogleOAuthProvider>
+        ) : (
+          children
+        )}
+      </ChakraProvider>
     </CacheProvider>
   );
 }
