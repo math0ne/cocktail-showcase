@@ -225,7 +225,7 @@ export function CocktailGrid() {
                 flex={{ base: 1, md: 'none' }}
                 borderRadius="lg"
               >
-                Ready ({readyCount})
+                Ready<Box as="span" display={{ base: 'none', md: 'inline' }}>&nbsp;({readyCount})</Box>
               </Button>
               <Button
                 bg={viewMode === 'tried' ? 'purple.600' : 'transparent'}
@@ -235,7 +235,7 @@ export function CocktailGrid() {
                 flex={{ base: 1, md: 'none' }}
                 borderRadius="lg"
               >
-                Tried ({triedCocktails.length})
+                Tried<Box as="span" display={{ base: 'none', md: 'inline' }}>&nbsp;({triedCocktails.length})</Box>
               </Button>
               <Button
                 bg={viewMode === 'liked' ? 'purple.600' : 'transparent'}
@@ -245,7 +245,7 @@ export function CocktailGrid() {
                 flex={{ base: 1, md: 'none' }}
                 borderRadius="lg"
               >
-                Liked ({heartedCocktails.length})
+                Liked<Box as="span" display={{ base: 'none', md: 'inline' }}>&nbsp;({heartedCocktails.length})</Box>
               </Button>
               <Button
                 bg={viewMode === 'matches' ? 'purple.600' : 'transparent'}
@@ -255,7 +255,7 @@ export function CocktailGrid() {
                 flex={{ base: 1, md: 'none' }}
                 borderRadius="lg"
               >
-                Matches ({matchedCount})
+                Matches<Box as="span" display={{ base: 'none', md: 'inline' }}>&nbsp;({matchedCount})</Box>
               </Button>
               <Button
                 bg={viewMode === 'all' ? 'purple.600' : 'transparent'}
@@ -265,7 +265,7 @@ export function CocktailGrid() {
                 flex={{ base: 1, md: 'none' }}
                 borderRadius="lg"
               >
-                All {totalCount > 0 ? `(${totalCount})` : ''}
+                All<Box as="span" display={{ base: 'none', md: 'inline' }}>{totalCount > 0 ? ` (${totalCount})` : ''}</Box>
               </Button>
             </ButtonGroup>
           </Box>
