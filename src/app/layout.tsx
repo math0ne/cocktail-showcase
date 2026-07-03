@@ -45,6 +45,16 @@ export default function RootLayout({
             height: 100%;
             font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
           }
+          /* Prevent iOS from auto-zooming when focusing a form field.
+             iOS zooms in whenever the field's font-size is below 16px, so
+             force at least 16px on touch devices (desktop is unaffected). */
+          @media (pointer: coarse) {
+            input:not([type='checkbox']):not([type='radio']),
+            textarea,
+            select {
+              font-size: 16px !important;
+            }
+          }
         `}} />
       </head>
       <body>
