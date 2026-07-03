@@ -300,7 +300,7 @@ export function CocktailGrid() {
             <Select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as DrinkSortOption)}
-              w={{ base: '130px', md: '150px' }}
+              w={{ base: '160px', md: '150px' }}
               h="40px"
               bg="gray.800"
               border="none"
