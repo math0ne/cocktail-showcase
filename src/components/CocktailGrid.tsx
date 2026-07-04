@@ -18,6 +18,7 @@ import {
   InputLeftElement,
   Divider,
   useDisclosure,
+  useBreakpointValue,
 } from '@chakra-ui/react';
 import { SearchIcon, AddIcon } from '@chakra-ui/icons';
 import { CocktailCard } from './CocktailCard';
@@ -51,6 +52,12 @@ export function CocktailGrid() {
     setSelectedMatch(match);
     onOpen();
   };
+
+  // Shorter placeholder on mobile to fit the narrower field
+  const searchPlaceholder = useBreakpointValue({
+    base: 'Search...',
+    md: 'Search cocktails, ingredients...',
+  });
 
   const filteredAndSorted = useMemo(() => {
     let result = [...matches];
@@ -273,12 +280,12 @@ export function CocktailGrid() {
           {/* Search + Sort Row (mobile: own row, desktop: same row) */}
           <Flex align="center" gap={3} flex={1} w={{ base: '100%', md: 'auto' }}>
             {/* Search */}
-            <InputGroup maxW={{ base: '100%', md: '300px' }} flex={1} h="40px">
+            <InputGroup maxW={{ base: 'none', md: '300px' }} flex={1} minW={0} h="40px">
               <InputLeftElement pointerEvents="none" h="40px">
                 <SearchIcon color="gray.500" />
               </InputLeftElement>
               <Input
-                placeholder="Search cocktails, ingredients..."
+                placeholder={searchPlaceholder}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 bg="gray.800"
@@ -300,7 +307,9 @@ export function CocktailGrid() {
             <Select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as DrinkSortOption)}
-              w={{ base: '160px', md: '150px' }}
+              w={{ base: 'auto', md: '150px' }}
+              flex={{ base: 1, md: 'none' }}
+              minW={0}
               h="40px"
               bg="gray.800"
               border="none"
@@ -308,7 +317,7 @@ export function CocktailGrid() {
               color="gray.400"
               fontSize="sm"
               fontWeight="semibold"
-              flexShrink={0}
+              flexShrink={{ base: 1, md: 0 }}
               _focus={{
                 boxShadow: '0 0 0 1px var(--chakra-colors-purple-500)',
               }}
