@@ -65,7 +65,7 @@ const theme = extendTheme({
     colors: {
       'bg.page': '#0d0d0d',
       'bg.surface': '#18181b',
-      'bg.card': '#121214',
+      'bg.card': '#18181b',
       'bg.subtle': '#27272a',
       'bg.muted': '#3f3f46',
       'border.default': '#27272a',
@@ -148,7 +148,7 @@ const theme = extendTheme({
     Modal: {
       baseStyle: {
         dialog: {
-          bg: '#0d0d0d',
+          bg: '#18181b',
           borderRadius: '2xl',
         },
         overlay: {

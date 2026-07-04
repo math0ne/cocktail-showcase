@@ -34,7 +34,7 @@ export function CocktailCard({ match, onClick, showReadyHighlight = true }: Cock
     <Box
       borderRadius="2xl"
       overflow="hidden"
-      bg="#121214"
+      bg="#18181b"
       border="1px solid"
       borderColor={showHighlight ? 'green.600' : 'whiteAlpha.100'}
       transition="all 0.2s ease"
@@ -61,7 +61,7 @@ export function CocktailCard({ match, onClick, showReadyHighlight = true }: Cock
           left={0}
           right={0}
           h="50%"
-          bgGradient="linear(to-t, #121214, transparent)"
+          bgGradient="linear(to-t, #18181b, transparent)"
           pointerEvents="none"
         />
         {/* Status badges - top right */}

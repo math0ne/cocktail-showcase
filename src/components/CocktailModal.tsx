@@ -120,7 +120,7 @@ export function CocktailModal({ match, isOpen, onClose, portalContainerRef }: Co
       portalProps={portalContainerRef ? { containerRef: portalContainerRef } : undefined}
     >
       <ModalOverlay bg="blackAlpha.800" backdropFilter="blur(8px)" />
-      <ModalContent bg="#0d0d0d" mx={4} borderRadius="2xl" border="1px solid" borderColor="whiteAlpha.100">
+      <ModalContent bg="#18181b" mx={4} borderRadius="2xl" border="1px solid" borderColor="whiteAlpha.100">
         <ModalHeader pr={20} color="gray.100">
           {currentCocktail.name}
         </ModalHeader>

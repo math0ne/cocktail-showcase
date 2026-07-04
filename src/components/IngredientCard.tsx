@@ -39,7 +39,7 @@ export function IngredientCard({ ingredient, isAdded, isInShoppingList, onClick,
     <Box
       borderRadius="2xl"
       overflow="hidden"
-      bg="#121214"
+      bg="#18181b"
       border="1px solid"
       borderColor={isAdded ? 'green.500' : isInShoppingList ? 'orange.500' : 'whiteAlpha.100'}
       transition="all 0.2s ease"

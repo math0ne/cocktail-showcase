@@ -128,7 +128,7 @@ export function AddIngredientModal({ isOpen, onClose, initialName = '' }: AddIng
     <Modal isOpen={isOpen} onClose={handleClose} size="md" isCentered>
       <ModalOverlay bg="blackAlpha.800" backdropFilter="blur(8px)" />
       <ModalContent
-        bg="#0d0d0d"
+        bg="#18181b"
         mx={4}
         borderRadius="2xl"
         border="1px solid"

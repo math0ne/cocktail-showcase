@@ -207,7 +207,7 @@ export default function HomePage() {
           <VStack spacing={6} align="stretch">
             {/* Quick Toggles */}
             <Box
-              bg="#121214"
+              bg="#18181b"
               p={4}
               borderRadius="2xl"
               border="1px solid"
@@ -226,7 +226,7 @@ export default function HomePage() {
             >
               {/* Ingredient List */}
               <Box
-                bg="#121214"
+                bg="#18181b"
                 p={6}
                 borderRadius="2xl"
                 border="1px solid"
@@ -247,7 +247,7 @@ export default function HomePage() {
 
               {/* Ingredient Picker */}
               <Box
-                bg="#121214"
+                bg="#18181b"
                 borderRadius="2xl"
                 border="1px solid"
                 borderColor="whiteAlpha.100"
@@ -274,7 +274,7 @@ export default function HomePage() {
 
             {/* Shopping List */}
             <Box
-              bg="#121214"
+              bg="#18181b"
               p={6}
               borderRadius="2xl"
               border="1px solid"
@@ -285,7 +285,7 @@ export default function HomePage() {
 
             {/* Data Export/Import */}
             <Box
-              bg="#121214"
+              bg="#18181b"
               p={6}
               borderRadius="2xl"
               border="1px solid"
