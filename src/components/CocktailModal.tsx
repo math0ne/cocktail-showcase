@@ -28,6 +28,7 @@ import { CheckCircleIcon, WarningIcon, EditIcon } from '@chakra-ui/icons';
 import { useStore } from '@/store/useStore';
 import { CocktailImage } from './CocktailImage';
 import { CreateDrinkModal } from './CreateDrinkModal';
+import { StarRating } from './StarRating';
 import type { CocktailMatch } from '@/types';
 
 // Checkmark icon component (outline only)
@@ -84,11 +85,13 @@ export function CocktailModal({ match, isOpen, onClose, portalContainerRef }: Co
   const triedCocktails = useStore((state) => state.triedCocktails);
   const heartedCocktails = useStore((state) => state.heartedCocktails);
   const cocktailNotes = useStore((state) => state.cocktailNotes);
+  const cocktailRatings = useStore((state) => state.cocktailRatings);
   const customCocktails = useStore((state) => state.customCocktails);
   const shoppingList = useStore((state) => state.shoppingList);
   const toggleTried = useStore((state) => state.toggleTried);
   const toggleHearted = useStore((state) => state.toggleHearted);
   const setCocktailNote = useStore((state) => state.setCocktailNote);
+  const setCocktailRating = useStore((state) => state.setCocktailRating);
   const addMultipleToShoppingList = useStore((state) => state.addMultipleToShoppingList);
 
   if (!match) return null;
@@ -97,6 +100,7 @@ export function CocktailModal({ match, isOpen, onClose, portalContainerRef }: Co
   const isTried = triedCocktails.includes(cocktail.id);
   const isHearted = heartedCocktails.includes(cocktail.id);
   const note = cocktailNotes[cocktail.id] || '';
+  const rating = cocktailRatings[cocktail.id] || 0;
   const missingLower = missingIngredients.map((m) => m.toLowerCase());
 
   // Check how many missing ingredients are not yet in shopping list
@@ -250,6 +254,19 @@ export function CocktailModal({ match, isOpen, onClose, portalContainerRef }: Co
                     )}
                   </Button>
                 )}
+              </HStack>
+
+              {/* Rating */}
+              <HStack spacing={3} align="center">
+                <Text fontSize="sm" color="gray.400" fontWeight="medium">
+                  Your rating
+                </Text>
+                <StarRating
+                  value={rating}
+                  onChange={(r) => setCocktailRating(cocktail.id, r)}
+                  size={6}
+                  spacing={1}
+                />
               </HStack>
 
               {/* Badges */}

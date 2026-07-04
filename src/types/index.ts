@@ -108,6 +108,7 @@ export interface AppState {
   triedCocktails: string[];
   heartedCocktails: string[];
   cocktailNotes: Record<string, string>;
+  cocktailRatings: Record<string, number>;
   addIngredient: (ingredient: string) => void;
   removeIngredient: (ingredient: string) => void;
   addToShoppingList: (ingredient: string) => void;
@@ -132,4 +133,5 @@ export interface AppState {
   toggleTried: (cocktailId: string) => void;
   toggleHearted: (cocktailId: string) => void;
   setCocktailNote: (cocktailId: string, note: string) => void;
+  setCocktailRating: (cocktailId: string, rating: number) => void;
 }

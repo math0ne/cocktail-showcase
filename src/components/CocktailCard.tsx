@@ -10,6 +10,7 @@ import {
 } from '@chakra-ui/react';
 import { useStore } from '@/store/useStore';
 import { CocktailImage } from './CocktailImage';
+import { StarRating } from './StarRating';
 import type { CocktailMatch } from '@/types';
 
 interface CocktailCardProps {
@@ -23,9 +24,11 @@ export function CocktailCard({ match, onClick, showReadyHighlight = true }: Cock
 
   const triedCocktails = useStore((state) => state.triedCocktails);
   const heartedCocktails = useStore((state) => state.heartedCocktails);
+  const cocktailRatings = useStore((state) => state.cocktailRatings);
 
   const isTried = triedCocktails.includes(cocktail.id);
   const isHearted = heartedCocktails.includes(cocktail.id);
+  const rating = cocktailRatings[cocktail.id] || 0;
 
   // Only show green border if highlight is enabled and it's a full match
   const showHighlight = showReadyHighlight && isFullMatch;
@@ -102,6 +105,8 @@ export function CocktailCard({ match, onClick, showReadyHighlight = true }: Cock
         <Text fontWeight="semibold" fontSize="md" noOfLines={1} color="gray.100">
           {cocktail.name}
         </Text>
+
+        {rating > 0 && <StarRating value={rating} size={3.5} />}
 
         <Wrap spacing={1.5} align="center">
           <WrapItem>

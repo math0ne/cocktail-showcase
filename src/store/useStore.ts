@@ -57,6 +57,7 @@ export const useStore = create<AppState>()(
       triedCocktails: [],
       heartedCocktails: [],
       cocktailNotes: {},
+      cocktailRatings: {},
 
       addIngredient: (ingredient: string) =>
         set((state) => {
@@ -278,6 +279,18 @@ export const useStore = create<AppState>()(
             [cocktailId]: note,
           },
         })),
+
+      setCocktailRating: (cocktailId: string, rating: number) =>
+        set((state) => {
+          const next = { ...state.cocktailRatings };
+          // A rating of 0 (or lower) clears it rather than storing a zero.
+          if (rating <= 0) {
+            delete next[cocktailId];
+          } else {
+            next[cocktailId] = Math.min(5, Math.round(rating));
+          }
+          return { cocktailRatings: next };
+        }),
     }),
     {
       name: 'cocktail-showcase-storage',

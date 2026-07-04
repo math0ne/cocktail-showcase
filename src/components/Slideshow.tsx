@@ -39,6 +39,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCocktails } from '@/hooks/useCocktails';
 import { useStore } from '@/store/useStore';
+import { StarRating } from './StarRating';
 import Link from 'next/link';
 import type { CocktailMatch } from '@/types';
 import { CocktailModal } from './CocktailModal';
@@ -209,6 +210,7 @@ export function Slideshow({ onClose }: SlideshowProps) {
   const setTransitionSpeed = useStore((state) => state.setTransitionSpeed);
   const triedCocktails = useStore((state) => state.triedCocktails);
   const heartedCocktails = useStore((state) => state.heartedCocktails);
+  const cocktailRatings = useStore((state) => state.cocktailRatings);
 
   const { interval, kenBurnsEnabled, filmGrainEnabled, retroFilterEnabled, transitionSpeed } = slideShowSettings;
 
@@ -743,6 +745,13 @@ export function Slideshow({ onClose }: SlideshowProps) {
                 {cocktail.name}
               </MotionText>
             </HStack>
+
+            {/* Rating */}
+            {(cocktailRatings[cocktail.id] || 0) > 0 && (
+              <MotionBox variants={badgeVariants}>
+                <StarRating value={cocktailRatings[cocktail.id]} size={6} spacing={1} />
+              </MotionBox>
+            )}
 
             {/* Badges */}
             <MotionHStack

@@ -172,6 +172,7 @@ export interface SyncData {
   triedCocktails: string[];
   heartedCocktails: string[];
   cocktailNotes: Record<string, string>;
+  cocktailRatings: Record<string, number>;
   slideShowSettings: any;
   imageRefs: Record<string, string>; // cocktailId -> driveFileId
 }

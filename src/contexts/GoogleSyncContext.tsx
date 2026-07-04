@@ -53,6 +53,7 @@ export function GoogleSyncProvider({ children }: Props) {
   const triedCocktails = useStore((state) => state.triedCocktails);
   const heartedCocktails = useStore((state) => state.heartedCocktails);
   const cocktailNotes = useStore((state) => state.cocktailNotes);
+  const cocktailRatings = useStore((state) => state.cocktailRatings);
   const slideShowSettings = useStore((state) => state.slideShowSettings);
 
   // Build data for comparison (without timestamp)
@@ -63,8 +64,9 @@ export function GoogleSyncProvider({ children }: Props) {
     triedCocktails,
     heartedCocktails,
     cocktailNotes,
+    cocktailRatings,
     slideShowSettings,
-  }), [myIngredients, shoppingList, customCocktails, triedCocktails, heartedCocktails, cocktailNotes, slideShowSettings]);
+  }), [myIngredients, shoppingList, customCocktails, triedCocktails, heartedCocktails, cocktailNotes, cocktailRatings, slideShowSettings]);
 
   // Build full sync data (with timestamp)
   const buildSyncData = useCallback((): SyncData => ({
@@ -83,6 +85,7 @@ export function GoogleSyncProvider({ children }: Props) {
       triedCocktails: data.triedCocktails || [],
       heartedCocktails: data.heartedCocktails || [],
       cocktailNotes: data.cocktailNotes || {},
+      cocktailRatings: data.cocktailRatings || {},
       ...(data.slideShowSettings && { slideShowSettings: data.slideShowSettings }),
     });
   }, []);
@@ -139,7 +142,7 @@ export function GoogleSyncProvider({ children }: Props) {
   useEffect(() => {
     if (!isSignedIn) return;
     debouncedSync();
-  }, [myIngredients, shoppingList, customCocktails, triedCocktails, heartedCocktails, cocktailNotes, slideShowSettings, isSignedIn, debouncedSync]);
+  }, [myIngredients, shoppingList, customCocktails, triedCocktails, heartedCocktails, cocktailNotes, cocktailRatings, slideShowSettings, isSignedIn, debouncedSync]);
 
   // Check for existing token on mount
   useEffect(() => {
@@ -162,6 +165,7 @@ export function GoogleSyncProvider({ children }: Props) {
                 triedCocktails: data.triedCocktails,
                 heartedCocktails: data.heartedCocktails,
                 cocktailNotes: data.cocktailNotes,
+                cocktailRatings: data.cocktailRatings,
                 slideShowSettings: data.slideShowSettings,
               });
               setLastSyncedAt(new Date(data.lastSyncedAt));
@@ -200,6 +204,7 @@ export function GoogleSyncProvider({ children }: Props) {
             triedCocktails: driveData.triedCocktails,
             heartedCocktails: driveData.heartedCocktails,
             cocktailNotes: driveData.cocktailNotes,
+            cocktailRatings: driveData.cocktailRatings,
             slideShowSettings: driveData.slideShowSettings,
           });
           setLastSyncedAt(new Date(driveData.lastSyncedAt));
