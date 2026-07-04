@@ -239,7 +239,14 @@ export function CocktailModal({ match, isOpen, onClose, portalContainerRef }: Co
                     borderRadius="xl"
                     isDisabled={allMissingInList || addedToList}
                   >
-                    {allMissingInList || addedToList ? 'In List' : `Add ${missingNotInList.length} Missing`}
+                    {allMissingInList || addedToList ? (
+                      'In List'
+                    ) : (
+                      <>
+                        Add {missingNotInList.length}
+                        <Box as="span" display={{ base: 'none', md: 'inline' }}>&nbsp;Missing</Box>
+                      </>
+                    )}
                   </Button>
                 )}
               </HStack>
