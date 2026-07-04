@@ -210,7 +210,7 @@ export function CocktailGrid() {
   return (
     <Box>
       {/* Controls */}
-      <VStack spacing={3} mb={6} align="stretch">
+      <VStack spacing={3} mb={{ base: 4, md: 6 }} align="stretch">
         {/* Row 1: Toggle (mobile: full width, desktop: inline with search/sort) */}
         <Flex align="center" gap={4} direction={{ base: 'column', md: 'row' }}>
           {/* Toggle - Left - Pill-shaped in gray container */}
