@@ -164,6 +164,9 @@ const theme = extendTheme({
         _focus: { boxShadow: 'none' },
         _focusVisible: { boxShadow: 'none' },
       },
+      defaultProps: {
+        size: 'lg',
+      },
     },
   },
 });

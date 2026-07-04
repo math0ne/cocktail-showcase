@@ -122,16 +122,16 @@ export function CocktailModal({ match, isOpen, onClose, portalContainerRef }: Co
     >
       <ModalOverlay bg="blackAlpha.800" backdropFilter="blur(8px)" />
       <ModalContent bg="#18181b" mx={4} borderRadius="2xl" border="1px solid" borderColor="whiteAlpha.100">
-        <ModalHeader pr={20} color="gray.100">
+        <ModalHeader pr={26} color="gray.100">
           {currentCocktail.name}
         </ModalHeader>
         <IconButton
           aria-label="Edit drink"
-          icon={<EditIcon />}
+          icon={<EditIcon boxSize={4} />}
           position="absolute"
           top={2}
-          right={10}
-          size="sm"
+          right={14}
+          size="lg"
           variant="ghost"
           color="gray.400"
           _hover={{ color: 'purple.400', bg: 'whiteAlpha.100' }}
