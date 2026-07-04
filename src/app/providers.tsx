@@ -157,6 +157,14 @@ const theme = extendTheme({
         },
       },
     },
+    // Drop the default (blue) focus ring on modal close buttons; it flashed
+    // when the modal auto-focused the button on open.
+    CloseButton: {
+      baseStyle: {
+        _focus: { boxShadow: 'none' },
+        _focusVisible: { boxShadow: 'none' },
+      },
+    },
   },
 });
 
