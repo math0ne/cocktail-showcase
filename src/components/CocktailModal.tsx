@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { keyframes } from '@emotion/react';
 import {
   Modal,
   ModalOverlay,
@@ -24,12 +25,18 @@ import {
   Textarea,
   IconButton,
 } from '@chakra-ui/react';
-import { CheckCircleIcon, WarningIcon, EditIcon } from '@chakra-ui/icons';
+import { CheckCircleIcon, WarningIcon, EditIcon, ChevronDownIcon } from '@chakra-ui/icons';
 import { useStore } from '@/store/useStore';
 import { CocktailImage } from './CocktailImage';
 import { CreateDrinkModal } from './CreateDrinkModal';
 import { StarRating } from './StarRating';
 import type { CocktailMatch } from '@/types';
+
+// Subtle bounce for the "more content below" scroll hint.
+const scrollHintBounce = keyframes`
+  0%, 100% { transform: translateY(0); opacity: 0.65; }
+  50% { transform: translateY(4px); opacity: 1; }
+`;
 
 // Checkmark icon component (outline only)
 const CheckIcon = () => (
@@ -75,12 +82,37 @@ export function CocktailModal({ match, isOpen, onClose, portalContainerRef }: Co
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [addedToList, setAddedToList] = useState(false);
 
+  // Scroll hint: show a fade + chevron while the modal body has more below.
+  const bodyRef = useRef<HTMLDivElement>(null);
+  const [showScrollHint, setShowScrollHint] = useState(false);
+
+  const updateScrollHint = useCallback(() => {
+    const el = bodyRef.current;
+    if (!el) return;
+    const remaining = el.scrollHeight - el.scrollTop - el.clientHeight;
+    setShowScrollHint(remaining > 12);
+  }, []);
+
   // Reset addedToList when modal opens with a different cocktail
   useEffect(() => {
     if (isOpen) {
       setAddedToList(false);
     }
   }, [isOpen, match?.cocktail.id]);
+
+  // Recompute the scroll hint on open / content change (images can shift height).
+  useEffect(() => {
+    if (!isOpen) {
+      setShowScrollHint(false);
+      return;
+    }
+    const timers = [0, 150, 400, 800].map((t) => setTimeout(updateScrollHint, t));
+    window.addEventListener('resize', updateScrollHint);
+    return () => {
+      timers.forEach(clearTimeout);
+      window.removeEventListener('resize', updateScrollHint);
+    };
+  }, [isOpen, match?.cocktail.id, updateScrollHint]);
 
   const triedCocktails = useStore((state) => state.triedCocktails);
   const heartedCocktails = useStore((state) => state.heartedCocktails);
@@ -142,7 +174,7 @@ export function CocktailModal({ match, isOpen, onClose, portalContainerRef }: Co
           onClick={() => setIsEditModalOpen(true)}
         />
         <ModalCloseButton color="gray.400" top={2} />
-        <ModalBody pb={6}>
+        <ModalBody pb={6} ref={bodyRef} onScroll={updateScrollHint}>
           <Flex gap={6} direction={{ base: 'column', md: 'row' }}>
             {/* Left Column - Image & Ingredients */}
             <VStack spacing={4} flex="0 0 auto" w={{ base: '100%', md: '240px' }} align="stretch">
@@ -349,6 +381,31 @@ export function CocktailModal({ match, isOpen, onClose, portalContainerRef }: Co
             </VStack>
           </Flex>
         </ModalBody>
+
+        {/* Scroll hint (mobile) — fades in while there's more content below */}
+        <Box
+          position="absolute"
+          bottom="0"
+          left="0"
+          right="0"
+          h="60px"
+          borderBottomRadius="2xl"
+          pointerEvents="none"
+          display={{ base: 'flex', md: 'none' }}
+          alignItems="flex-end"
+          justifyContent="center"
+          pb={2}
+          bgGradient="linear(to-t, #18181b 35%, transparent)"
+          opacity={showScrollHint ? 1 : 0}
+          transition="opacity 0.2s ease"
+          zIndex={2}
+        >
+          <ChevronDownIcon
+            boxSize={6}
+            color="whiteAlpha.800"
+            animation={`${scrollHintBounce} 1.4s ease-in-out infinite`}
+          />
+        </Box>
       </ModalContent>
 
       {/* Edit Modal */}
