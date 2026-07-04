@@ -24,7 +24,7 @@ export function StarRating({
   onChange,
   size = 4,
   spacing = 0.5,
-  color = '#f59e0b',
+  color = '#a78bfa',
   emptyColor = 'whiteAlpha.300',
 }: StarRatingProps) {
   const [hover, setHover] = useState<number | null>(null);
