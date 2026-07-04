@@ -77,7 +77,7 @@ export default function HomePage() {
       {/* Header */}
       <Box
         bg="#0d0d0d"
-        borderBottom="1px solid"
+        borderBottom={{ base: 'none', md: '1px solid' }}
         borderColor="whiteAlpha.100"
         py={3}
         px={{ base: 4, md: 6 }}
@@ -187,7 +187,7 @@ export default function HomePage() {
       {/* Main Content */}
       {view === 'drinks' ? (
         <Box position="relative">
-          <Box px={{ base: 4, md: 6 }} py={6} pb={24}>
+          <Box px={{ base: 4, md: 6 }} pt={{ base: 1, md: 6 }} pb={24}>
             <CocktailGrid />
           </Box>
           {/* Bottom fade overlay */}
