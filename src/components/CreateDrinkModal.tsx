@@ -238,7 +238,7 @@ export function CreateDrinkModal({ isOpen, onClose, editCocktail }: CreateDrinkM
     name.trim() && ingredients.some((ing) => ing.name.trim());
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} size="xl" scrollBehavior="inside">
+    <Modal isOpen={isOpen} onClose={handleClose} size="xl" scrollBehavior="inside" autoFocus={false}>
       <ModalOverlay bg="blackAlpha.800" backdropFilter="blur(8px)" />
       <ModalContent
         bg="#18181b"

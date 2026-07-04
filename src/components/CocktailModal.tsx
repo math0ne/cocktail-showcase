@@ -117,6 +117,7 @@ export function CocktailModal({ match, isOpen, onClose, portalContainerRef }: Co
       onClose={onClose}
       size="4xl"
       scrollBehavior="inside"
+      autoFocus={false}
       portalProps={portalContainerRef ? { containerRef: portalContainerRef } : undefined}
     >
       <ModalOverlay bg="blackAlpha.800" backdropFilter="blur(8px)" />

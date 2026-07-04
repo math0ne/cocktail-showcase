@@ -1056,6 +1056,7 @@ export function Slideshow({ onClose }: SlideshowProps) {
       onClose={closeSettings}
       isCentered
       size="md"
+      autoFocus={false}
       portalProps={{ containerRef: modalContainerRef }}
     >
       <ModalOverlay backdropFilter="blur(8px)" bg="blackAlpha.700" />

@@ -125,7 +125,7 @@ export function AddIngredientModal({ isOpen, onClose, initialName = '' }: AddIng
   const isValid = name.trim().length > 0;
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} size="md" isCentered>
+    <Modal isOpen={isOpen} onClose={handleClose} size="md" isCentered autoFocus={false}>
       <ModalOverlay bg="blackAlpha.800" backdropFilter="blur(8px)" />
       <ModalContent
         bg="#18181b"
