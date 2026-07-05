@@ -23,6 +23,7 @@ import {
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
+  ChevronDownIcon,
   CloseIcon,
 } from '@chakra-ui/icons';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -83,6 +84,16 @@ export function Slideshow({ onClose }: SlideshowProps) {
   const [timerReset, setTimerReset] = useState(0);
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
 
+  // Scroll affordance for the (scrollbar-hidden) info panel
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [canScrollDown, setCanScrollDown] = useState(false);
+
+  const updateScrollHint = useCallback(() => {
+    const el = contentRef.current;
+    if (!el) return;
+    setCanScrollDown(el.scrollHeight - el.scrollTop - el.clientHeight > 4);
+  }, []);
+
   const resetTimer = useCallback(() => {
     setTimerReset((t) => t + 1);
   }, []);
@@ -102,6 +113,20 @@ export function Slideshow({ onClose }: SlideshowProps) {
       window.location.href = '/';
     }
   }, [onClose]);
+
+  // Reset scroll to top and recompute the scroll hint whenever the slide changes
+  // (also on initial load, once the panel mounts and content has height)
+  useEffect(() => {
+    const el = contentRef.current;
+    if (el) el.scrollTop = 0;
+    updateScrollHint();
+  }, [currentIndex, loading, updateScrollHint]);
+
+  // Recompute the scroll hint on viewport resize
+  useEffect(() => {
+    window.addEventListener('resize', updateScrollHint);
+    return () => window.removeEventListener('resize', updateScrollHint);
+  }, [updateScrollHint]);
 
   // Wake Lock to prevent device sleep
   useEffect(() => {
@@ -327,12 +352,20 @@ export function Slideshow({ onClose }: SlideshowProps) {
         </Box>
 
         {/* Content */}
+        <Box position="relative" flex={1} minH={0}>
         <VStack
-          flex={1}
+          ref={contentRef}
+          onScroll={updateScrollHint}
           align="stretch"
+          h="100%"
           p={6}
           spacing={6}
           overflowY="auto"
+          sx={{
+            '&::-webkit-scrollbar': { display: 'none' },
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
+          }}
         >
           {/* Title */}
           <Box>
@@ -487,6 +520,31 @@ export function Slideshow({ onClose }: SlideshowProps) {
             </VStack>
           </Box>
         </VStack>
+
+          {/* Scroll hint — fades in only when more content sits below the fold */}
+          <Flex
+            position="absolute"
+            bottom={0}
+            left={0}
+            right={0}
+            h="64px"
+            align="flex-end"
+            justify="center"
+            pb={2}
+            pointerEvents="none"
+            opacity={canScrollDown ? 1 : 0}
+            transition="opacity 0.2s ease"
+            bgGradient="linear(to-t, #0d0d0d 25%, transparent)"
+          >
+            <MotionBox
+              color="whiteAlpha.700"
+              animate={{ y: [0, 4, 0] }}
+              transition={{ duration: 1.4, repeat: Infinity, ease: 'easeInOut' }}
+            >
+              <ChevronDownIcon boxSize={6} />
+            </MotionBox>
+          </Flex>
+        </Box>
       </Flex>
 
       {/* Right Panel - Image */}
