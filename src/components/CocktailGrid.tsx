@@ -47,6 +47,7 @@ export function CocktailGrid() {
   const myIngredients = useStore((state) => state.myIngredients);
   const triedCocktails = useStore((state) => state.triedCocktails);
   const heartedCocktails = useStore((state) => state.heartedCocktails);
+  const cocktailRatings = useStore((state) => state.cocktailRatings);
 
   const handleCardClick = (match: CocktailMatch) => {
     setSelectedMatch(match);
@@ -115,10 +116,17 @@ export function CocktailGrid() {
         if (aTried !== bTried) return aTried - bTried;
         return a.cocktail.name.localeCompare(b.cocktail.name);
       });
+    } else if (sortBy === 'rating') {
+      result.sort((a, b) => {
+        const aRating = cocktailRatings[a.cocktail.id] || 0;
+        const bRating = cocktailRatings[b.cocktail.id] || 0;
+        if (aRating !== bRating) return bRating - aRating;
+        return a.cocktail.name.localeCompare(b.cocktail.name);
+      });
     }
 
     return result;
-  }, [matches, sortBy, viewMode, search, triedCocktails, heartedCocktails]);
+  }, [matches, sortBy, viewMode, search, triedCocktails, heartedCocktails, cocktailRatings]);
 
   // Group by category or glass for section headers
   const groupedResults = useMemo(() => {
@@ -332,6 +340,7 @@ export function CocktailGrid() {
               <option value="name">Name (A-Z)</option>
               <option value="liked">Liked First</option>
               <option value="tried">Tried First</option>
+              <option value="rating">Highest Rated</option>
               <option value="category">Category</option>
               <option value="glass">Glass Type</option>
               <option value="ingredients">Ingredients</option>
