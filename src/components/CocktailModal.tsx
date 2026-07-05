@@ -163,9 +163,9 @@ export function CocktailModal({ match, isOpen, onClose, portalContainerRef }: Co
         </ModalHeader>
         <IconButton
           aria-label="Edit drink"
-          icon={<EditIcon boxSize={4} />}
+          icon={<EditIcon boxSize="18px" />}
           position="absolute"
-          top={2}
+          top="6px"
           right={14}
           size="lg"
           variant="ghost"
