@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Box,
   Container,
@@ -72,8 +72,32 @@ export default function HomePage() {
     setView(newView);
   };
 
+  // While the slideshow is open the main page is display:none so the
+  // (potentially huge) cocktail grid costs nothing to render. Remember the
+  // scroll position, since collapsing the page resets it.
+  const scrollPosRef = useRef(0);
+  const openSlideshow = () => {
+    scrollPosRef.current = window.scrollY;
+    setShowSlideshow(true);
+  };
+  const closeSlideshow = useCallback(() => setShowSlideshow(false), []);
+
+  useEffect(() => {
+    if (!showSlideshow && scrollPosRef.current > 0) {
+      // Wait a frame so the restored grid has its full height back before
+      // scrolling, otherwise the browser clamps the position.
+      const raf = requestAnimationFrame(() => {
+        window.scrollTo(0, scrollPosRef.current);
+      });
+      return () => cancelAnimationFrame(raf);
+    }
+  }, [showSlideshow]);
+
   return (
     <Box minH="100vh" bg="#0d0d0d">
+      {/* Hidden while the slideshow overlay is open so the grid doesn't
+          compete with the slideshow for rendering work (slow on iPads) */}
+      <Box display={showSlideshow ? 'none' : 'block'}>
       {/* Header */}
       <Box
         bg="#0d0d0d"
@@ -174,7 +198,7 @@ export default function HomePage() {
                 _hover={{ bgGradient: 'linear(to-r, purple.500, purple.400)' }}
                 borderRadius="lg"
                 fontWeight="medium"
-                onClick={() => setShowSlideshow(true)}
+                onClick={openSlideshow}
               >
                 Slideshow
               </Button>
@@ -296,6 +320,7 @@ export default function HomePage() {
           </VStack>
         </Container>
       )}
+      </Box>
 
       {/* Slideshow Overlay */}
       {showSlideshow && (
@@ -305,7 +330,7 @@ export default function HomePage() {
           zIndex={9999}
           bg="black"
         >
-          <Slideshow onClose={() => setShowSlideshow(false)} />
+          <Slideshow onClose={closeSlideshow} />
         </Box>
       )}
     </Box>
