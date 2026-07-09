@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { keyframes } from '@emotion/react';
 import {
   Box,
   Container,
@@ -37,10 +38,24 @@ const CocktailLogo = (props: any) => (
 
 type ViewMode = 'bar' | 'drinks';
 
+// Purple glow pulse used to point out the bar stock section after
+// navigating there from the header ingredients stat.
+const barStockFlash = keyframes`
+  0%, 100% {
+    border-color: rgba(255, 255, 255, 0.06);
+    box-shadow: none;
+  }
+  20%, 70% {
+    border-color: var(--chakra-colors-purple-400);
+    box-shadow: 0 0 0 1px var(--chakra-colors-purple-400), 0 0 28px rgba(167, 139, 250, 0.35);
+  }
+`;
+
 export default function HomePage() {
   const [view, setView] = useState<ViewMode>('drinks');
   const [showSlideshow, setShowSlideshow] = useState(false);
   const myIngredients = useStore((state) => state.myIngredients);
+  const setDrinkViewMode = useStore((state) => state.setDrinkViewMode);
   const { fullMatches, matches } = useCocktails();
 
   // Read hash from URL and set view
@@ -71,6 +86,35 @@ export default function HomePage() {
     window.history.pushState(null, '', newUrl);
     setView(newView);
   };
+
+  // Header stat shortcuts: ingredients jumps to the bar stock section
+  // (with a flash), ready/close jump to the drinks view pre-filtered.
+  const barStockRef = useRef<HTMLDivElement>(null);
+  const [flashBarStock, setFlashBarStock] = useState(false);
+
+  const goToBarStock = () => {
+    handleViewChange('bar');
+    setFlashBarStock(true);
+  };
+
+  const goToDrinksFiltered = (mode: 'ready' | 'matches') => {
+    setDrinkViewMode(mode);
+    handleViewChange('drinks');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    if (view === 'bar' && flashBarStock) {
+      const raf = requestAnimationFrame(() => {
+        barStockRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+      const timer = setTimeout(() => setFlashBarStock(false), 1800);
+      return () => {
+        cancelAnimationFrame(raf);
+        clearTimeout(timer);
+      };
+    }
+  }, [view, flashBarStock]);
 
   // While the slideshow is open the main page is display:none so the
   // (potentially huge) cocktail grid costs nothing to render. Remember the
@@ -127,26 +171,59 @@ export default function HomePage() {
             {/* Stats in header - pill container */}
             {myIngredients.length > 0 && (
               <HStack
-                spacing={4}
+                spacing={1}
                 display={{ base: 'none', md: 'flex' }}
                 bg="whiteAlpha.50"
-                px={4}
-                py={1.5}
+                px={2}
+                py={1}
                 borderRadius="xl"
               >
-                <HStack spacing={1}>
+                <HStack
+                  as="button"
+                  spacing={1}
+                  px={2}
+                  py={0.5}
+                  borderRadius="lg"
+                  cursor="pointer"
+                  transition="background 0.15s ease"
+                  _hover={{ bg: 'whiteAlpha.100' }}
+                  onClick={goToBarStock}
+                  title="View your bar stock"
+                >
                   <Text fontSize="lg" fontWeight="bold" color="purple.400">
                     {myIngredients.length}
                   </Text>
                   <Text color="gray.400" fontSize="xs">ingredients</Text>
                 </HStack>
-                <HStack spacing={1}>
+                <HStack
+                  as="button"
+                  spacing={1}
+                  px={2}
+                  py={0.5}
+                  borderRadius="lg"
+                  cursor="pointer"
+                  transition="background 0.15s ease"
+                  _hover={{ bg: 'whiteAlpha.100' }}
+                  onClick={() => goToDrinksFiltered('ready')}
+                  title="View drinks you can make"
+                >
                   <Text fontSize="lg" fontWeight="bold" color="green.400">
                     {fullMatches.length}
                   </Text>
                   <Text color="gray.400" fontSize="xs">ready</Text>
                 </HStack>
-                <HStack spacing={1}>
+                <HStack
+                  as="button"
+                  spacing={1}
+                  px={2}
+                  py={0.5}
+                  borderRadius="lg"
+                  cursor="pointer"
+                  transition="background 0.15s ease"
+                  _hover={{ bg: 'whiteAlpha.100' }}
+                  onClick={() => goToDrinksFiltered('matches')}
+                  title="View drinks you're close to making"
+                >
                   <Text fontSize="lg" fontWeight="bold" color="orange.400">
                     {matches.length - fullMatches.length}
                   </Text>
@@ -250,11 +327,14 @@ export default function HomePage() {
             >
               {/* Ingredient List */}
               <Box
+                ref={barStockRef}
                 bg="#18181b"
                 p={6}
                 borderRadius="2xl"
                 border="1px solid"
                 borderColor="whiteAlpha.100"
+                animation={flashBarStock ? `${barStockFlash} 1.6s ease-in-out` : undefined}
+                scrollMarginTop="16px"
               >
                 <HStack mb={4}>
                   <Heading size="md" color="gray.100">
