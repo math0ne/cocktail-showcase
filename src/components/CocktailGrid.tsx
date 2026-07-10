@@ -253,7 +253,6 @@ export function CocktailGrid({ flashFilter = false }: CocktailGridProps) {
             h={{ base: 'auto', md: '40px' }}
             display="flex"
             alignItems="center"
-            animation={flashFilter ? `${filterFlash} 1.6s ease-in-out` : undefined}
           >
             <ButtonGroup isAttached variant="ghost" size="sm" w="100%" flexWrap="wrap">
               <Button
@@ -263,6 +262,7 @@ export function CocktailGrid({ flashFilter = false }: CocktailGridProps) {
                 onClick={() => setViewMode('ready')}
                 flex={{ base: 1, md: 'none' }}
                 borderRadius="lg"
+                animation={flashFilter && viewMode === 'ready' ? `${filterFlash} 1.6s ease-in-out` : undefined}
               >
                 Ready<Box as="span" display={{ base: 'none', md: 'inline' }}>&nbsp;({readyCount})</Box>
               </Button>
@@ -293,6 +293,7 @@ export function CocktailGrid({ flashFilter = false }: CocktailGridProps) {
                 onClick={() => setViewMode('matches')}
                 flex={{ base: 1, md: 'none' }}
                 borderRadius="lg"
+                animation={flashFilter && viewMode === 'matches' ? `${filterFlash} 1.6s ease-in-out` : undefined}
               >
                 Close<Box as="span" display={{ base: 'none', md: 'inline' }}>&nbsp;({closeCount})</Box>
               </Button>
