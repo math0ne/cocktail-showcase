@@ -91,6 +91,7 @@ export default function HomePage() {
   // (with a flash), ready/close jump to the drinks view pre-filtered.
   const barStockRef = useRef<HTMLDivElement>(null);
   const [flashBarStock, setFlashBarStock] = useState(false);
+  const [flashFilter, setFlashFilter] = useState(false);
 
   const goToBarStock = () => {
     handleViewChange('bar');
@@ -101,7 +102,15 @@ export default function HomePage() {
     setDrinkViewMode(mode);
     handleViewChange('drinks');
     window.scrollTo({ top: 0, behavior: 'smooth' });
+    setFlashFilter(true);
   };
+
+  useEffect(() => {
+    if (flashFilter) {
+      const timer = setTimeout(() => setFlashFilter(false), 1800);
+      return () => clearTimeout(timer);
+    }
+  }, [flashFilter]);
 
   useEffect(() => {
     if (view === 'bar' && flashBarStock) {
@@ -289,7 +298,7 @@ export default function HomePage() {
       {view === 'drinks' ? (
         <Box position="relative">
           <Box px={{ base: 4, md: 6 }} pt={{ base: 1, md: 6 }} pb={24}>
-            <CocktailGrid />
+            <CocktailGrid flashFilter={flashFilter} />
           </Box>
           {/* Bottom fade overlay */}
           <Box

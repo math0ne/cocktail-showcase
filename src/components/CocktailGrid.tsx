@@ -28,9 +28,25 @@ import { useCocktails } from '@/hooks/useCocktails';
 import { useStore } from '@/store/useStore';
 import type { CocktailMatch, DrinkSortOption, DrinkViewMode } from '@/types';
 import Link from 'next/link';
+import { keyframes } from '@emotion/react';
 import { fuzzyMatch } from '@/lib/fuzzyMatch';
 
-export function CocktailGrid() {
+// Purple glow pulse used to point out the filter toggle after arriving
+// via a header stat shortcut (same treatment as the bar stock flash).
+const filterFlash = keyframes`
+  0%, 100% {
+    box-shadow: none;
+  }
+  20%, 70% {
+    box-shadow: 0 0 0 1px var(--chakra-colors-purple-400), 0 0 28px rgba(167, 139, 250, 0.35);
+  }
+`;
+
+interface CocktailGridProps {
+  flashFilter?: boolean;
+}
+
+export function CocktailGrid({ flashFilter = false }: CocktailGridProps) {
   const [selectedMatch, setSelectedMatch] = useState<CocktailMatch | null>(null);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { isOpen: isCreateOpen, onOpen: onCreateOpen, onClose: onCreateClose } = useDisclosure();
@@ -230,6 +246,7 @@ export function CocktailGrid() {
             h={{ base: 'auto', md: '40px' }}
             display="flex"
             alignItems="center"
+            animation={flashFilter ? `${filterFlash} 1.6s ease-in-out` : undefined}
           >
             <ButtonGroup isAttached variant="ghost" size="sm" w="100%" flexWrap="wrap">
               <Button
@@ -270,7 +287,7 @@ export function CocktailGrid() {
                 flex={{ base: 1, md: 'none' }}
                 borderRadius="lg"
               >
-                Matches<Box as="span" display={{ base: 'none', md: 'inline' }}>&nbsp;({matchedCount})</Box>
+                Close<Box as="span" display={{ base: 'none', md: 'inline' }}>&nbsp;({matchedCount})</Box>
               </Button>
               <Button
                 bg={viewMode === 'all' ? 'purple.600' : 'transparent'}
