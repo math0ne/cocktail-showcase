@@ -91,6 +91,11 @@ export function CocktailGrid({ flashFilter = false }: CocktailGridProps) {
     // View mode filters
     if (viewMode === 'ready') {
       result = result.filter((m) => m.isFullMatch);
+    } else if (viewMode === 'matches') {
+      // "Close" = drinks you're close to making but can't yet; ready
+      // drinks live in their own tab. Keeps the count in sync with the
+      // header's "close" stat.
+      result = result.filter((m) => !m.isFullMatch);
     } else if (viewMode === 'tried') {
       result = result.filter((m) => triedCocktails.includes(m.cocktail.id));
     } else if (viewMode === 'liked') {
@@ -164,6 +169,8 @@ export function CocktailGrid({ flashFilter = false }: CocktailGridProps) {
   }, [filteredAndSorted, sortBy]);
 
   const readyCount = matches.filter((m) => m.isFullMatch).length;
+  // "Close" excludes ready drinks, matching the header's close stat.
+  const closeCount = Math.max(0, matchedCount - readyCount);
 
   if (loading) {
     return (
@@ -287,7 +294,7 @@ export function CocktailGrid({ flashFilter = false }: CocktailGridProps) {
                 flex={{ base: 1, md: 'none' }}
                 borderRadius="lg"
               >
-                Close<Box as="span" display={{ base: 'none', md: 'inline' }}>&nbsp;({matchedCount})</Box>
+                Close<Box as="span" display={{ base: 'none', md: 'inline' }}>&nbsp;({closeCount})</Box>
               </Button>
               <Button
                 bg={viewMode === 'all' ? 'purple.600' : 'transparent'}
